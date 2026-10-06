@@ -1,0 +1,116 @@
+================================================================================
+ASPEK DAN PARAMETER BAKU EVALUASI SUPPLIER (SRM - DECISION SUPPORT SYSTEM)
+Standar Industri Pengadaan Modern (Strategic Procurement & Supply Chain)
+================================================================================
+
+--------------------------------------------------------------------------------
+ASPEK 1: KOMERSIAL & FINANSIAL
+--------------------------------------------------------------------------------
+1. Harga Satuan (Unit Price)
+   - Satuan / Ukuran : Rupiah (Rp)
+   - Penjelasan      : Harga bersih per unit produk yang ditawarkan supplier.
+
+2. Biaya Pengiriman (Freight Cost)
+   - Satuan / Ukuran : Rupiah (Rp)
+   - Penjelasan      : Ongkos angkut dan bongkar muat sampai ke gudang pembeli.
+
+3. Ketentuan Pembayaran (Terms of Payment)
+   - Satuan / Ukuran : Hari
+   - Penjelasan      : Lama tempo pembayaran (Cash, Net 14, Net 30, Net 60).
+
+4. Potongan Harga Volume (Volume Discount)
+   - Satuan / Ukuran : Persen (%)
+   - Penjelasan      : Persentase diskon yang didapat saat beli dalam partai besar.
+
+5. Stabilitas Harga (Price Stability)
+   - Satuan / Ukuran : Bulan
+   - Penjelasan      : Masa jaminan harga tidak naik sepihak selama masa kontrak.
+
+6. Kesehatan Finansial Supplier
+   - Satuan / Ukuran : Skor Rating
+   - Penjelasan      : Tingkat kelayakan modal supplier agar tidak bangkrut mendadak.
+
+
+--------------------------------------------------------------------------------
+ASPEK 2: KUALITAS & MUTU PRODUK
+--------------------------------------------------------------------------------
+1. Tingkat Cacat Barang (Defect Rate)
+   - Satuan / Ukuran : Persen (%) / PPM (Parts Per Million)
+   - Penjelasan      : Rasio barang rusak atau tidak lolos inspeksi di gudang.
+
+2. Masa Kedaluwarsa (Shelf Life)
+   - Satuan / Ukuran : Hari / Bulan
+   - Penjelasan      : Sisa masa simpan produk dari tanggal kirim ke batas basi.
+
+3. Konsistensi Spesifikasi Produk
+   - Satuan / Ukuran : Skor (1 - 5)
+   - Penjelasan      : Keseragaman mutu, ukuran, dan bahan di setiap pengiriman.
+
+4. Sertifikasi Mutu Resmi
+   - Satuan / Ukuran : Ya / Tidak
+   - Penjelasan      : Kepemilikan sertifikat standar internasional (seperti ISO 9001).
+
+
+--------------------------------------------------------------------------------
+ASPEK 3: OPERASIONAL & LOGISTIK
+--------------------------------------------------------------------------------
+1. Ketepatan Waktu (On-Time Delivery / OTD)
+   - Satuan / Ukuran : Persen (%)
+   - Penjelasan      : Rasio pesanan yang sampai tepat pada tanggal yang dijanjikan.
+
+2. Waktu Tunggu Pesanan (Order Lead Time)
+   - Satuan / Ukuran : Hari
+   - Penjelasan      : Durasi dari pengiriman Surat Pesanan (PO) sampai barang tiba.
+
+3. Kelengkapan Jumlah Kirim (In-Full Delivery)
+   - Satuan / Ukuran : Persen (%)
+   - Penjelasan      : Tingkat kesesuaian jumlah barang yang datang dengan isi PO.
+
+4. Minimal Pemesanan (Minimum Order Quantity / MOQ)
+   - Satuan / Ukuran : Unit / Karton
+   - Penjelasan      : Batas pembelian paling sedikit yang diwajibkan supplier.
+
+5. Kapasitas Produksi Maksimal
+   - Satuan / Ukuran : Unit / Bulan
+   - Penjelasan      : Batas maksimal unit yang sanggup disuplai jika ada lonjakan.
+
+6. Ketersediaan Stok Pengaman (Safety Stock)
+   - Satuan / Ukuran : Unit
+   - Penjelasan      : Stok cadangan yang disimpan supplier khusus pesanan darurat.
+
+
+--------------------------------------------------------------------------------
+ASPEK 4: LAYANAN & HUBUNGAN KEMITRAAN
+--------------------------------------------------------------------------------
+1. Kecepatan Respon Layanan (SLA Response)
+   - Satuan / Ukuran : Jam / Menit
+   - Penjelasan      : Waktu tanggap perwakilan supplier membalas komplain/pesanan.
+
+2. Kecepatan Penanganan Retur (RMA Lead Time)
+   - Satuan / Ukuran : Hari
+   - Penjelasan      : Durasi waktu yang dibutuhkan supplier mengganti barang rusak.
+
+3. Fleksibilitas Perubahan Pesanan
+   - Satuan / Ukuran : Skor (1 - 5)
+   - Penjelasan      : Kemudahan menyesuaikan jadwal atau volume pesanan mendadak.
+
+4. Kemudahan Komunikasi & Transparansi
+   - Satuan / Ukuran : Skor (1 - 5)
+   - Penjelasan      : Keterbukaan informasi kendala produksi dan pelacakan posisi kiriman.
+
+
+--------------------------------------------------------------------------------
+ASPEK 5: KEPATUHAN LEGAL & KEAMANAN
+--------------------------------------------------------------------------------
+1. Kelengkapan Izin Edar & Legalitas Usaha
+   - Satuan / Ukuran : Status Dokumen (Lengkap / Tidak)
+   - Penjelasan      : Kepemilikan izin resmi (NIB, NPWP, BPOM, SNI, Halal).
+
+2. Kepatuhan Standar Lingkungan & K3
+   - Satuan / Ukuran : Status Sertifikat
+   - Penjelasan      : Proses produksi bebas limbah berbahaya (ISO 14001 / ISO 45001).
+
+3. Kerahasiaan Data & Desain (NDA)
+   - Satuan / Ukuran : Perjanjian Resmi (Ada / Tidak)
+   - Penjelasan      : Jaminan keamanan data dan formula bisnis tidak dibocorkan.
+================================================================================

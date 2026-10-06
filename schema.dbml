@@ -1,0 +1,188 @@
+// ==============================================================================
+// SKEMA DATABASE SISTEM PENDUKUNG KEPUTUSAN (SPK) PEMILIHAN REKANAN / SUPPLIER
+// Format: DBML (Database Markup Language - https://dbdiagram.io / https://dbdocs.io)
+// Database Engine: SQL Server
+// ==============================================================================
+
+Project SPK_Supplier {
+  database_type: 'SQL Server'
+  Note: '''
+    # Sistem Pendukung Keputusan Pemilihan Supplier Berbasis SRM & AHP
+    Alur Kerja & Arsitektur Bisnis:
+    1. Manajemen Pengguna & Hak Akses (Roles, Users, Menu_Roles)
+    2. Master Kriteria Evaluasi dibuat terlebih dahulu (Aspeks, Parameters dengan Bobot Prioritas)
+    3. Master Perusahaan Rekanan (Suppliers - dapat didaftarkan langsung di sesi keputusan)
+    4. Transaksi Evaluasi & Penetapan Keputusan (Keputusans berelasi ke Aspek terpilih, mendukung Draf & Selesai)
+    5. Detail Penilaian Peserta Rekanan (KeputusanDetails - nullable untuk status Draf sebelum perhitungan)
+    6. Lembar Fakta Penawaran Rekanan (KeputusanNilais - menyimpan nilai riil penawaran supplier per parameter)
+  '''
+}
+
+// ==============================================================================
+// 1. MODUL OTORISASI & PENGGUNA
+// ==============================================================================
+
+Table Roles {
+  Id int [pk, increment, note: '1: Administrator, 2: Manajer Pengadaan']
+  NamaRole nvarchar(100) [not null]
+  Deskripsi nvarchar(500)
+
+  // Metadata Audit
+  CreatedAt datetime2 [not null, default: `getdate()`]
+  CreatedBy uniqueidentifier
+  UpdatedAt datetime2
+  UpdatedBy uniqueidentifier
+
+  Note: 'Tabel peran hak akses pengguna sistem'
+}
+
+Table Users {
+  Id int [pk, increment]
+  NamaLengkap nvarchar(200) [not null]
+  Email nvarchar(200) [not null, unique]
+  PasswordHash nvarchar(510) [not null]
+  RoleId int [not null, ref: > Roles.Id]
+  IsActive bit [not null, default: true]
+  ResetPasswordToken nvarchar(510)
+  ResetPasswordExpiry datetime2
+
+  // Metadata Audit
+  CreatedAt datetime2 [not null, default: `getdate()`]
+  CreatedBy uniqueidentifier
+  UpdatedAt datetime2
+  UpdatedBy uniqueidentifier
+
+  Note: 'Data akun pengguna aplikasi'
+}
+
+Table Menu_Roles {
+  Id int [pk, increment]
+  RoleId int [not null, ref: > Roles.Id]
+  NamaMenu nvarchar(100) [not null]
+  Icon nvarchar(100) [not null]
+  Url nvarchar(200) [not null]
+  Urutan int [not null, default: 1]
+
+  Note: 'Daftar menu navigasi dinamis per hak akses'
+}
+
+// ==============================================================================
+// 2. MASTER DATA KRITERIA EVALUASI (ASPEK & PARAMETER)
+// ==============================================================================
+
+Table Aspeks {
+  Id uniqueidentifier [pk, default: `newid()`]
+  KodeAspek nvarchar(50) [not null, unique, note: 'ASP-001, ASP-002, dll']
+  NamaAspek nvarchar(200) [not null, note: 'Contoh: Finansial & Harga, Kualitas Layanan, Legalitas']
+  Deskripsi nvarchar(500)
+  Urutan int [not null, default: 1]
+
+  // Metadata Audit
+  CreatedAt datetime2 [not null, default: `getdate()`]
+  CreatedBy uniqueidentifier
+  UpdatedAt datetime2
+  UpdatedBy uniqueidentifier
+
+  Note: 'Kategori / dimensi aspek penilaian'
+}
+
+Table Parameters {
+  Id uniqueidentifier [pk, default: `newid()`]
+  AspekId uniqueidentifier [not null, ref: > Aspeks.Id]
+  KodeParameter nvarchar(50) [not null, note: 'C1, C2, C3, dll']
+  NamaParameter nvarchar(200) [not null, note: 'Contoh: Harga Satuan, Waktu Respon SLA, Termin Pembayaran']
+  Satuan nvarchar(50) [not null, note: 'Rp, Hari, Jam, Skor, %']
+  SifatKriteria nvarchar(50) [not null, note: 'Cost (makin kecil makin baik) atau Benefit (makin besar makin baik)']
+  Bobot decimal(5,2) [not null, default: 0.00, note: 'Persentase bobot kriteria (%) tersimpan di database']
+  Keterangan nvarchar(500)
+
+  // Metadata Audit
+  CreatedAt datetime2 [not null, default: `getdate()`]
+  CreatedBy uniqueidentifier
+  UpdatedAt datetime2
+  UpdatedBy uniqueidentifier
+
+  Note: 'Parameter kriteria penilaian turunan dari Aspek'
+}
+
+// ==============================================================================
+// 3. MASTER DATA PERUSAHAAN REKANAN (SUPPLIERS)
+// ==============================================================================
+
+Table Suppliers {
+  Id uniqueidentifier [pk, default: `newid()`]
+  KodeSupplier nvarchar(50) [not null, unique, note: 'SPL-001, SPL-002, dll']
+  NamaSupplier nvarchar(200) [not null, note: 'Nama Perusahaan Supplier / Vendor']
+  KontakPerson nvarchar(200) [note: 'PIC / Kontak Utama']
+  Telepon nvarchar(100) [note: 'No HP / Telepon Kantor']
+  Email nvarchar(200)
+  Alamat nvarchar(1000)
+  Status nvarchar(100) [not null, default: 'Aktif', note: 'Aktif / Tidak Aktif']
+
+  // Metadata Audit
+  CreatedAt datetime2 [not null, default: `getdate()`]
+  CreatedBy uniqueidentifier
+  UpdatedAt datetime2
+  UpdatedBy uniqueidentifier
+
+  Note: 'Master profil rekanan/supplier'
+}
+
+// ==============================================================================
+// 4. TRANSAKSI SESI EVALUASI & PENETAPAN KEPUTUSAN
+// ==============================================================================
+
+Table Keputusans {
+  Id uniqueidentifier [pk, default: `newid()`]
+  KodeKeputusan nvarchar(50) [not null, unique, note: 'KPTS-YYYYMMDD-XXX']
+  NamaKeputusan nvarchar(200) [not null, note: 'Nama Kegiatan / Pengadaan Barang']
+  TanggalKeputusan datetime2 [not null, default: `getdate()`]
+  
+  // Relasi Aspek Kriteria Terpilih
+  AspekId uniqueidentifier [null, ref: > Aspeks.Id, note: 'Aspek yang digunakan dalam evaluasi sesi ini']
+
+  // Hasil Pemenang Terpilih
+  SupplierPemenangId uniqueidentifier [null, ref: > Suppliers.Id, note: 'Rekanan Juara 1']
+  SkorTertinggi decimal(10,4) [null, note: 'Skor AHP tertinggi pemenang']
+  Status nvarchar(50) [not null, default: 'Draft', note: 'Draft (belum hitung / parsial) atau Selesai']
+  Keterangan nvarchar(500)
+
+  // Metadata Audit
+  CreatedAt datetime2 [not null, default: `getdate()`]
+  CreatedBy uniqueidentifier
+  UpdatedAt datetime2
+  UpdatedBy uniqueidentifier
+
+  Note: 'Header transaksi sesi keputusan/pengadaan'
+}
+
+Table KeputusanDetails {
+  Id uniqueidentifier [pk, default: `newid()`]
+  KeputusanId uniqueidentifier [not null, ref: > Keputusans.Id]
+  SupplierId uniqueidentifier [not null, ref: > Suppliers.Id]
+
+  // Skor & Peringkat (Nullable agar sesi Draf dapat disimpan sebelum kalkulasi)
+  SkorAkhir decimal(10,4) [null, note: 'Skor kelayakan akhir AHP (diisi setelah perhitungan)']
+  Peringkat int [null, note: 'Urutan peringkat (1 = Pemenang Utama)']
+  StatusRekomendasi nvarchar(100) [null, default: 'Draft', note: 'Draft / Pilihan Utama / Alternatif Cadangan / Tidak Direkomendasikan']
+  CatatanEvaluasi nvarchar(1000)
+
+  // Metadata Audit
+  CreatedAt datetime2 [not null, default: `getdate()`]
+  CreatedBy uniqueidentifier
+
+  Note: 'Daftar supplier peserta yang dievaluasi dalam sesi keputusan'
+}
+
+Table KeputusanNilais {
+  Id uniqueidentifier [pk, default: `newid()`]
+  KeputusanDetailId uniqueidentifier [not null, ref: > KeputusanDetails.Id]
+  ParameterId uniqueidentifier [not null, ref: > Parameters.Id]
+  NilaiRiil decimal(18,4) [not null, default: 0, note: 'Nilai angka riil penawaran supplier (Rp, Hari, Skor, dll)']
+
+  // Metadata Audit
+  CreatedAt datetime2 [not null, default: `getdate()`]
+  CreatedBy uniqueidentifier
+
+  Note: 'Lembar nilai riil penawaran supplier untuk setiap parameter kriteria'
+}

@@ -1,0 +1,569 @@
+@{
+    ViewData["Title"] = "Detail Evaluasi Keputusan";
+    var kepId = (ViewData["KeputusanId"] as string) ?? "";
+}
+
+<style>
+    /* Metadata info box */
+    .info-card-box {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 12px 14px;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    .info-label {
+        font-size: 11.5px;
+        color: #475569;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .03em;
+        margin-bottom: 4px;
+    }
+    .info-value {
+        font-size: 14px;
+        color: #0f172a;
+        font-weight: 700;
+    }
+
+    /* Outer Table Frame matching modern DataTables styling */
+    .custom-table-frame {
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 10px !important;
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        background: #ffffff !important;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03) !important;
+    }
+    .custom-table-frame table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+        margin-bottom: 0 !important;
+    }
+    .custom-table-frame table thead th {
+        background-color: #f1f5f9 !important;
+        color: #0f172a !important;
+        font-weight: 700 !important;
+        font-size: 13px !important;
+        letter-spacing: 0.3px !important;
+        padding: 12px 14px !important;
+        border-bottom: 2px solid #cbd5e1 !important;
+        vertical-align: middle !important;
+        white-space: nowrap !important;
+    }
+    .custom-table-frame table tbody td {
+        padding: 11px 14px !important;
+        color: #0f172a !important;
+        font-size: 13.5px !important;
+        border-bottom: 1px solid #e2e8f0 !important;
+        vertical-align: middle !important;
+        background-color: #ffffff;
+    }
+    .custom-table-frame table tbody tr:last-child td {
+        border-bottom: none !important;
+    }
+    .custom-table-frame table tbody tr:hover td {
+        background-color: #f8fafc !important;
+    }
+    .custom-table-frame table tbody tr.tr-winner td {
+        background-color: rgba(236, 253, 245, 0.75) !important;
+    }
+
+    /* Badges & Tags */
+    .code-tag {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        font-size: 12.5px;
+        font-weight: 700;
+        background: #e2e8f0;
+        color: #0f172a;
+        padding: 3px 8px;
+        border-radius: 5px;
+        border: 1px solid #cbd5e1;
+        display: inline-block;
+        white-space: nowrap !important;
+        text-wrap: nowrap !important;
+        word-break: keep-all !important;
+    }
+
+    /* Benefit / Cost pills */
+    .pill-cost {
+        background: #fee2e2;
+        color: #991b1b;
+        border: 1px solid #fecaca;
+        border-radius: 4px;
+        font-size: 11px;
+        padding: 2px 7px;
+        font-weight: 700;
+        display: inline-block;
+    }
+    .pill-benefit {
+        background: #d1fae5;
+        color: #065f46;
+        border: 1px solid #a7f3d0;
+        border-radius: 4px;
+        font-size: 11px;
+        padding: 2px 7px;
+        font-weight: 700;
+        display: inline-block;
+    }
+
+    #alertDraftNotice {
+        display: none !important;
+    }
+    #alertDraftNotice.is-draft-visible {
+        display: flex !important;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    /* Print View Rules */
+    @@media print {
+        body * {
+            visibility: hidden;
+        }
+        #printableDetailArea, #printableDetailArea * {
+            visibility: visible;
+        }
+        #printableDetailArea {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            padding: 15px;
+            background: #ffffff;
+        }
+        .no-print {
+            display: none !important;
+        }
+        .admin-card {
+            border: 1px solid #cbd5e1 !important;
+            box-shadow: none !important;
+            margin-bottom: 1rem !important;
+            break-inside: avoid;
+        }
+    }
+</style>
+
+<div class="row" id="printableDetailArea">
+    <div class="col-12">
+
+        <!-- Top Bar Actions (Breadcrumb & Nav Buttons) -->
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3 no-print">
+            <div class="content-breadcrumb-bar mb-0">
+                <div class="breadcrumb-nav">
+                    <a href="/Riwayat/Index" class="text-decoration-none" style="color:#475569; font-weight:600; font-size:13px;">Riwayat Evaluasi Keputusan</a>
+                    <span class="breadcrumb-separator" style="color:#94a3b8; margin:0 6px;">/</span>
+                    <span class="breadcrumb-current text-dark fw-bold" style="font-size:13px;">Detail Evaluasi Keputusan</span>
+                </div>
+            </div>
+            <div>
+                <button type="button" class="btn-primary-admin" onclick="window.print()">
+                    <i class="fas fa-print me-1.5"></i> Cetak Dokumen
+                </button>
+            </div>
+        </div>
+
+        <!-- Print-Only Official Header -->
+        <div class="d-none d-print-block text-center pb-3 mb-3 border-bottom">
+            <h3 style="font-size:18px; font-weight:800; text-transform:uppercase; margin-bottom:4px; letter-spacing:0.5px; color:#0f172a;">
+                Sistem Pendukung Keputusan Penentuan Prioritas Alternatif Terbaik Menggunakan Metode Simple Additive Weighting (SAW)
+            </h3>
+            <p style="font-size:12px; margin-bottom:0; color:#334155; font-weight:600;">
+                LEMBAR LAPORAN REKOMENDASI DAN RINCIAN EVALUASI MULTI-KRITERIA
+            </p>
+        </div>
+
+        <!-- Loading State -->
+        <div id="detailLoadingState" class="admin-card p-5 text-center text-muted">
+            <i class="fas fa-spinner fa-spin fs-3 mb-2 text-teal"></i>
+            <div style="font-size:13.5px; color:#475569; font-weight:600;">Memuat data rincian evaluasi keputusan...</div>
+        </div>
+
+        <!-- Main Content (Shown after data loaded) -->
+        <div id="detailMainContent" style="display:none;">
+
+            <!-- Alert Draft Notice (If accessed while still a draft) -->
+            <div id="alertDraftNotice" class="alert alert-warning p-3 mb-3 border border-warning-subtle rounded-3 no-print" style="display:none;">
+                <div class="d-flex align-items-center gap-2.5">
+                    <i class="fas fa-triangle-exclamation fs-4 text-warning"></i>
+                    <div>
+                        <strong class="text-dark" style="font-size:13.5px;">Evaluasi Ini Masih Berstatus Draf (Belum Selesai Dihitung)</strong>
+                        <div style="font-size:12.5px; color:#475569; margin-top:2px;">Kegiatan evaluasi keputusan ini belum sampai di tahap perhitungan &amp; penetapan prioritas. Riwayat resmi hanya menyajikan evaluasi yang telah dihitung dan disahkan.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 1. INFORMASI EVALUASI KEPUTUSAN -->
+            <div class="admin-card mb-4">
+                <div class="admin-card-header py-2.5 px-3 px-md-4">
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 w-100">
+                        <div>
+                            <h3 class="admin-card-title" style="font-size:15px; font-weight:700; color:#0f172a;">Informasi Evaluasi Keputusan</h3>
+                            <p class="admin-card-desc" style="font-size:12.5px; color:#475569;">Identitas dokumen dan lingkup aspek evaluasi kandidat alternatif</p>
+                        </div>
+                        <div>
+                            <span id="badgeStatusSesi" class="status-pill pill-active" style="font-size:12px; font-weight:700; background:#dcfce7; color:#15803d; border:1px solid #86efac; padding:4px 12px; border-radius:9999px;">
+                                Selesai Disahkan
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="admin-card-body p-3 px-md-4">
+                    <div class="row g-3">
+                        <div class="col-6 col-md-3">
+                            <div class="info-card-box">
+                                <div class="info-label">Nomor Dokumen Evaluasi</div>
+                                <div class="info-value font-monospace" id="dispKode">-</div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="info-card-box">
+                                <div class="info-label">Tanggal Evaluasi</div>
+                                <div class="info-value" id="dispTanggal">-</div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="info-card-box">
+                                <div class="info-label">Aspek Penilaian</div>
+                                <div class="info-value" id="dispAspek">-</div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="info-card-box">
+                                <div class="info-label">Jumlah Kandidat Alternatif</div>
+                                <div class="info-value" id="dispJumlahAlternatif">0 Kandidat</div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <div class="info-card-box">
+                                <div class="info-label">Nama Kegiatan Evaluasi</div>
+                                <div class="info-value" style="font-size:14.5px; color:#0f172a;" id="dispNama">-</div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6" id="wrapKeterangan">
+                            <div class="info-card-box">
+                                <div class="info-label">Catatan / Keterangan Evaluasi</div>
+                                <div class="info-value" style="font-size:13.5px; font-weight:500; color:#334155; line-height:1.4;" id="dispKeterangan">-</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. TABEL MATRIKS NILAI RIIL KANDIDAT ALTERNATIF -->
+            <div class="admin-card mb-4">
+                <div class="admin-card-header py-2.5 px-3 px-md-4">
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 w-100">
+                        <div>
+                            <h3 class="admin-card-title" style="font-size:15px; font-weight:700; color:#0f172a;">Rincian Matriks Nilai Riil Kandidat Alternatif</h3>
+                            <p class="admin-card-desc" style="font-size:12.5px; color:#475569;">Data nilai kuantitatif aktual setiap kandidat alternatif pada masing-masing kriteria</p>
+                        </div>
+                        <div>
+                            <span class="badge border px-2.5 py-1.5 font-monospace" style="font-size:12px; font-weight:600; background:#f1f5f9; color:#0f172a; border-color:#cbd5e1;" id="badgeCountParam">0 Kriteria Penilaian</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="table-responsive p-3">
+                    <div class="custom-table-frame">
+                        <table class="table table-hover align-middle mb-0 w-100" id="tableNilaiRiil">
+                            <thead id="theadNilaiRiil"></thead>
+                            <tbody id="tbodyNilaiRiil"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. TABEL URUTAN PERINGKAT & PREFERENSI SELURUH KANDIDAT ALTERNATIF -->
+            <div class="admin-card mb-4">
+                <div class="admin-card-header py-2.5 px-3 px-md-4">
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 w-100">
+                        <div>
+                            <h3 class="admin-card-title" style="font-size:15px; font-weight:700; color:#0f172a;">Rekapitulasi Peringkat Prioritas Kandidat Alternatif</h3>
+                            <p class="admin-card-desc" style="font-size:12.5px; color:#475569;">Urutan prioritas kandidat alternatif berdasarkan skor preferensi evaluasi komposit terbobot</p>
+                        </div>
+                        <div>
+                            <span class="badge border px-2.5 py-1.5 font-monospace" style="font-size:12px; font-weight:600; background:#f1f5f9; color:#0f172a; border-color:#cbd5e1;" id="badgeCountAlternatif">0 Kandidat</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="table-responsive p-3">
+                    <div class="custom-table-frame">
+                        <table class="table table-hover align-middle mb-0 w-100" id="tableRanking">
+                            <thead id="theadRanking"></thead>
+                            <tbody id="tbodyRanking"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TANDA TANGAN PENGESAHAN (HANYA MUNCUL DI PRINT) -->
+            <div class="d-none d-print-block mt-4 pt-2">
+                <div style="display:flex; justify-content:space-between; width:100%;">
+                    <div style="text-align:center; width:220px;">
+                        <span style="font-size:12px; color:#334155;">Diusulkan &amp; Dianalisis oleh:</span><br>
+                        <strong style="font-size:13px; color:#0f172a;">Tim Pengambil Keputusan</strong>
+                        <div style="height:60px;"></div>
+                        <span style="border-top:1px solid #334155; display:inline-block; width:190px; font-size:12px; color:#0f172a;">( ......................................... )</span>
+                    </div>
+                    <div style="text-align:center; width:220px;">
+                        <span style="font-size:12px; color:#334155;">Disahkan &amp; Ditetapkan oleh:</span><br>
+                        <strong style="font-size:13px; color:#0f172a;">Pejabat Berwenang</strong>
+                        <div style="height:60px;"></div>
+                        <span style="border-top:1px solid #334155; display:inline-block; width:190px; font-size:12px; color:#0f172a;">( ......................................... )</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    function escHtml(str) {
+        if (str === null || str === undefined) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    var keputusanId = '@kepId';
+    if (!keputusanId) {
+        var urlParams = new URLSearchParams(window.location.search);
+        keputusanId = urlParams.get('id') || '';
+    }
+
+    $(document).ready(function () {
+        if (!keputusanId) {
+            $('#detailLoadingState').html(
+                '<div class="text-danger mb-2"><i class="fas fa-exclamation-triangle fs-3"></i></div>' +
+                '<h5 style="color:#0f172a; font-weight:700;">ID Evaluasi Keputusan Tidak Ditemukan</h5>' +
+                '<p style="color:#475569; font-size:13px;">Silakan kembali ke halaman riwayat dan pilih evaluasi keputusan yang ingin dilihat.</p>' +
+                '<a href="/Riwayat/Index" class="btn btn-outline-secondary btn-sm mt-2"><i class="fas fa-arrow-left me-1"></i> Kembali ke Riwayat</a>'
+            );
+            return;
+        }
+
+        loadDetailData(keputusanId);
+    });
+
+    function loadDetailData(id) {
+        $.ajax({
+            url: API_BASE_URL + '/keputusans/' + id,
+            type: 'GET',
+            dataType: 'json',
+            success: function (data) {
+                if (!data) {
+                    $('#detailLoadingState').html('<div class="py-4" style="color:#475569; font-size:13px;">Data evaluasi keputusan tidak ditemukan di server.</div>');
+                    return;
+                }
+                renderDetailPage(data);
+                $('#detailLoadingState').hide();
+                $('#detailMainContent').fadeIn(150);
+            },
+            error: function (xhr) {
+                var msg = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : 'Gagal memuat detail evaluasi dari server.';
+                $('#detailLoadingState').html(
+                    '<div class="text-danger py-4">' +
+                    '<i class="fas fa-circle-exclamation fs-3 mb-2 d-block"></i>' +
+                    '<strong style="font-size:14px;">' + escHtml(msg) + '</strong><br>' +
+                    '<a href="/Riwayat/Index" class="btn btn-outline-secondary btn-sm mt-3"><i class="fas fa-arrow-left me-1"></i> Kembali ke Riwayat</a>' +
+                    '</div>'
+                );
+            }
+        });
+    }
+
+    function renderDetailPage(d) {
+        var tgl = d.tanggalKeputusan
+            ? new Date(d.tanggalKeputusan).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
+            : '-';
+
+        $('#dispKode').html('<span class="code-tag">' + escHtml(d.kodeKeputusan || '-') + '</span>');
+        $('#dispTanggal').text(tgl);
+        $('#dispAspek').text(d.namaAspek || '-');
+        $('#dispNama').text(d.namaKeputusan || '-');
+        $('#dispKeterangan').text(d.keterangan || '-');
+
+        var isDraft = (d.status === 'Draft' || !d.status || d.status === '');
+        if (isDraft) {
+            $('#badgeStatusSesi')
+                .css({ 'background': '#fef3c7', 'color': '#b45309', 'border-color': '#fcd34d' })
+                .text('Draf / Belum Selesai');
+            $('#alertDraftNotice').addClass('is-draft-visible');
+        } else {
+            $('#badgeStatusSesi')
+                .css({ 'background': '#dcfce7', 'color': '#15803d', 'border-color': '#86efac' })
+                .text('Selesai Disahkan');
+            $('#alertDraftNotice').removeClass('is-draft-visible');
+        }
+
+        var details = d.details || [];
+        $('#dispJumlahAlternatif').text(details.length + ' Kandidat');
+        $('#badgeCountAlternatif').text(details.length + ' Kandidat');
+
+        // Render Matriks Nilai Riil
+        renderMatriksNilaiRiil(details);
+
+        // Render Ranking Table
+        renderRankingTable(details);
+    }
+
+    function renderMatriksNilaiRiil(details) {
+        if (!details || details.length === 0 || !details[0].nilais || details[0].nilais.length === 0) {
+            $('#theadNilaiRiil').html('<tr><th style="width:50px; text-align:center;">NO</th><th style="width:170px; min-width:170px; text-align:left; white-space:nowrap;" class="text-nowrap">KODE</th><th>KANDIDAT ALTERNATIF</th><th class="text-center text-muted">Belum ada parameter tercatat</th></tr>');
+            $('#tbodyNilaiRiil').html('<tr><td colspan="4" class="text-center py-4" style="color:#64748b; font-size:13px;">Tidak ada rincian nilai riil tercatat.</td></tr>');
+            $('#badgeCountParam').text('0 Kriteria Penilaian');
+            return;
+        }
+
+        var sampleNilais = details[0].nilais;
+        $('#badgeCountParam').text(sampleNilais.length + ' Kriteria Penilaian');
+
+        var headHtml = '<tr>' +
+            '<th style="width:50px; text-align:center;">NO</th>' +
+            '<th style="width:170px; min-width:170px; text-align:left; white-space:nowrap;" class="text-nowrap">KODE</th>' +
+            '<th style="min-width:180px; text-align:left;">KANDIDAT ALTERNATIF</th>';
+
+        for (var p = 0; p < sampleNilais.length; p++) {
+            var param = sampleNilais[p];
+            var sifatBadge = (param.sifatKriteria === 'Benefit')
+                ? '<span class="pill-benefit">Benefit</span>'
+                : '<span class="pill-cost">Cost</span>';
+
+            var bobotText = param.bobot ? Number(param.bobot).toFixed(1).replace('.0', '') + '%' : '';
+
+            headHtml += '<th class="text-center" style="min-width:140px;">' +
+                '<div class="fw-bold text-truncate" title="' + escHtml(param.namaParameter) + '" style="font-size:13px; color:#0f172a;">' + escHtml(param.namaParameter) + '</div>' +
+                '<div class="d-flex justify-content-center align-items-center gap-1.5 mt-1" style="font-size:11.5px; color:#334155;">' +
+                    (param.satuan ? '<span class="fw-semibold">' + escHtml(param.satuan) + '</span><span>•</span>' : '') +
+                    sifatBadge +
+                    (bobotText ? '<span>•</span><span class="fw-bold" style="color:#0f766e;">' + bobotText + '</span>' : '') +
+                '</div>' +
+                '</th>';
+        }
+        headHtml += '</tr>';
+        $('#theadNilaiRiil').html(headHtml);
+
+        var bodyHtml = '';
+        for (var i = 0; i < details.length; i++) {
+            var item = details[i];
+            bodyHtml += '<tr>';
+            bodyHtml += '<td class="text-center fw-bold" style="color:#0f172a; font-size:13px;">' + (i + 1) + '</td>';
+            bodyHtml += '<td class="text-nowrap" style="white-space:nowrap;"><span class="code-tag">' + escHtml(item.kodeSupplier || '-') + '</span></td>';
+            bodyHtml += '<td>' +
+                '<div class="fw-bold" style="font-size:13.5px; color:#0f172a;">' + escHtml(item.namaSupplier) + '</div>' +
+                '</td>';
+
+            var itemNilais = item.nilais || [];
+            for (var p = 0; p < sampleNilais.length; p++) {
+                var targetParamId = sampleNilais[p].parameterId;
+                var foundVal = itemNilais.find(function (n) { return n.parameterId === targetParamId; });
+                var valNum = foundVal ? Number(foundVal.nilaiRiil) : 0;
+                var valStr = valNum.toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+
+                bodyHtml += '<td class="text-center font-monospace" style="font-size:13.5px;">' +
+                    '<span class="fw-bold" style="color:#0f172a;">' + valStr + '</span>' +
+                    (sampleNilais[p].satuan ? ' <span class="fw-normal" style="font-size:11.5px; color:#475569;">' + escHtml(sampleNilais[p].satuan) + '</span>' : '') +
+                    '</td>';
+            }
+            bodyHtml += '</tr>';
+        }
+        $('#tbodyNilaiRiil').html(bodyHtml);
+    }
+
+    function renderRankingTable(details) {
+        if (!details || details.length === 0) {
+            $('#theadRanking').html('<tr><th style="width:70px;" class="text-center">RANK</th><th style="width:170px; min-width:170px; text-align:left; white-space:nowrap;" class="text-nowrap">KODE</th><th>NAMA ALTERNATIF</th><th style="width:160px;" class="text-center">SKOR AKHIR</th><th style="width:160px;" class="text-center">STATUS</th><th>KESIMPULAN</th></tr>');
+            $('#tbodyRanking').html('<tr><td colspan="6" class="text-center py-4" style="color:#64748b; font-size:13px;">Belum ada alternatif tercatat.</td></tr>');
+            return;
+        }
+
+        var thead = '<tr>' +
+            '<th style="width:70px; text-align:center;">RANK</th>' +
+            '<th style="width:170px; min-width:170px; text-align:left; white-space:nowrap;" class="text-nowrap">KODE</th>' +
+            '<th style="min-width:200px; text-align:left;">KANDIDAT ALTERNATIF</th>' +
+            '<th style="width:160px; text-align:center;">SKOR AKHIR EVALUASI</th>' +
+            '<th style="width:160px; text-align:center;">STATUS REKOMENDASI</th>' +
+            '<th style="min-width:240px; text-align:left;">CATATAN EVALUASI / KESIMPULAN</th>' +
+            '</tr>';
+        $('#theadRanking').html(thead);
+
+        // Sort details by peringkat (asc) or skorAkhir (desc)
+        var sorted = details.slice().sort(function (a, b) {
+            if (a.peringkat && b.peringkat) return a.peringkat - b.peringkat;
+            return (Number(b.skorAkhir) || 0) - (Number(a.skorAkhir) || 0);
+        });
+
+        var tbody = '';
+        for (var i = 0; i < sorted.length; i++) {
+            var item = sorted[i];
+            var rank = item.peringkat || (i + 1);
+            var isWin = (rank === 1);
+            var skorNum = (item.skorAkhir !== null && item.skorAkhir !== undefined) ? Number(item.skorAkhir) : 0;
+            var skorPersen = (skorNum * 100).toFixed(2);
+
+            var statusBadge = '';
+            if (isWin) {
+                statusBadge = '<span class="status-pill pill-active" style="font-size:12px; font-weight:700; background:#dcfce7; color:#15803d; border:1px solid #86efac; padding:4px 12px; border-radius:9999px;">' +
+                    '<span class="dot-indicator" style="background:#16a34a;"></span>Pilihan Utama' +
+                    '</span>';
+            } else if (rank === 2) {
+                statusBadge = '<span class="status-pill" style="font-size:12px; font-weight:700; background:#e0f2fe; color:#0369a1; border:1px solid #bae6fd; padding:4px 12px; border-radius:9999px;">' +
+                    '<span class="dot-indicator" style="background:#0284c7;"></span>Alternatif Cadangan' +
+                    '</span>';
+            } else {
+                statusBadge = '<span class="status-pill" style="font-size:12px; font-weight:600; background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; padding:4px 12px; border-radius:9999px;">' +
+                    escHtml(item.statusRekomendasi || 'Dipertimbangkan') +
+                    '</span>';
+            }
+
+            var catatanText = item.catatanEvaluasi;
+            if (!catatanText) {
+                if (isWin) {
+                    catatanText = 'Unggul di peringkat 1 sebagai rekomendasi prioritas utama dengan skor kelayakan tertinggi.';
+                } else {
+                    catatanText = 'Alternatif cadangan urutan ke-' + rank + ' dengan skor kelayakan komposit terbobot ' + skorNum.toFixed(4) + '.';
+                }
+            }
+
+            tbody += '<tr class="' + (isWin ? 'tr-winner' : '') + '">';
+            tbody += '<td class="text-center">' +
+                (isWin
+                    ? '<span class="badge border px-2.5 py-1 fw-bold" style="font-size:12px; background:#dcfce7; color:#15803d; border-color:#86efac;">1</span>'
+                    : '<span class="badge border px-2.5 py-1 fw-bold" style="font-size:12px; background:#f1f5f9; color:#334155; border-color:#cbd5e1;">' + rank + '</span>') +
+            '</td>';
+
+            tbody += '<td class="text-nowrap" style="white-space:nowrap;"><span class="code-tag">' + escHtml(item.kodeSupplier || '-') + '</span></td>';
+
+            tbody += '<td>' +
+                '<div class="fw-bold" style="font-size:14px; color:' + (isWin ? '#0f766e' : '#0f172a') + ';">' +
+                    escHtml(item.namaSupplier) +
+                '</div>' +
+            '</td>';
+
+            tbody += '<td class="text-center font-monospace fw-bold" style="font-size:14.5px; color:#047857;">' +
+                skorNum.toFixed(4) +
+                '<div style="font-size:11.5px; color:#059669; font-weight:700; margin-top:2px;">(' + skorPersen + '%)</div>' +
+            '</td>';
+
+            tbody += '<td class="text-center">' + statusBadge + '</td>';
+
+            tbody += '<td style="font-size:12.5px; color:#334155; line-height:1.4;">' +
+                escHtml(catatanText) +
+            '</td>';
+
+            tbody += '</tr>';
+        }
+
+        $('#tbodyRanking').html(tbody);
+    }
+</script>
+}

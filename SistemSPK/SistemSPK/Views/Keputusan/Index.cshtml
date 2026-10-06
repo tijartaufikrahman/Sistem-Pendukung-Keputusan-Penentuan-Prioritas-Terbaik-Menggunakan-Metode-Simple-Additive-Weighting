@@ -1,0 +1,2172 @@
+@{
+    ViewData["Title"] = "Penentuan Prioritas Rekomendasi Keputusan";
+}
+
+@* =========================================================================
+   STYLE SHEET: ALUR PROGRESIF BERSIH TANPA PENOMORAN
+   ========================================================================= *@
+<style>
+    /* ── Form Controls ── */
+    .form-group { display: flex; flex-direction: column; gap: .35rem; }
+    .form-group.mb { margin-bottom: .85rem; }
+    .form-label { font-size: .82rem; font-weight: 600; color: #334155; }
+    .lbl-req::after { content: " *"; color: #ef4444; }
+    .form-control { border: 1px solid #cbd5e1; border-radius: 8px; padding: .55rem .75rem; font-size: .88rem; color: #0f172a; outline: none; transition: all .15s; background: #fff; font-family: inherit; }
+    .form-control:focus { border-color: #0f766e; box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.12); }
+    select.form-control { cursor: pointer; }
+    .field-error { font-size: .74rem; color: #ef4444; min-height: .9rem; line-height: 1.2; font-weight: 500; }
+
+    /* ── Standard Cards ── */
+    .kpts-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+        margin-bottom: 1.25rem !important;
+        overflow: hidden;
+    }
+    .kpts-card-header {
+        padding: 0.9rem 1.25rem;
+        background: #ffffff;
+        border-bottom: 1px solid #e2e8f0;
+    }
+    .kpts-card-body {
+        padding: 1.15rem 1.25rem;
+    }
+
+    /* ── Active Parent Banner & Meta Chips ── */
+    .meta-chip {
+        display: inline-flex;
+        align-items: center;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        padding: 4px 10px;
+        font-size: 11.5px;
+        color: #475569;
+        white-space: nowrap;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+    }
+
+    /* ── Table Info Kegiatan (Vertical Key-Value) ── */
+    .table-info-kegiatan {
+        border-collapse: collapse !important;
+        border: none !important;
+        margin: 0 !important;
+        width: auto !important;
+    }
+    .table-info-kegiatan tr {
+        display: table-row !important;
+    }
+    .table-info-kegiatan td {
+        border: none !important;
+        background: transparent !important;
+        font-size: 13px !important;
+        line-height: 1.5 !important;
+    }
+    .collapse-chevron {
+        transition: transform 0.25s ease-in-out;
+        display: inline-block;
+    }
+    .collapsed .collapse-chevron,
+    [aria-expanded="false"] .collapse-chevron {
+        transform: rotate(180deg);
+    }
+
+    /* ── Messages & Alerts ── */
+    .msg-info  { background: #f0fdfa; border: 1px solid #99f6e4; border-radius: 8px; padding: .65rem 1rem; color: #0f766e; font-size: .83rem; display: flex; align-items: center; gap: 8px; font-weight: 500; }
+    .msg-error { background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: .65rem 1rem; color: #991b1b; font-size: .83rem; display: flex; align-items: center; gap: 8px; font-weight: 500; }
+
+    /* ── Buttons ── */
+    .btn-add {
+        display: inline-flex; align-items: center; gap: .45rem;
+        background: #0f766e;
+        color: #fff; border: 1px solid #0f766e; border-radius: 8px; padding: .52rem 1.15rem;
+        font-size: .84rem; font-weight: 600; cursor: pointer;
+        box-shadow: 0 1px 2px rgba(15, 118, 110, 0.15); transition: all .15s ease; font-family: inherit;
+    }
+    .btn-add:hover { background: #115e59; border-color: #115e59; color: #fff; }
+    .btn-process {
+        display: inline-flex; align-items: center; gap: .5rem;
+        background: #0f766e;
+        color: #fff; border: 1px solid #0f766e; border-radius: 8px; padding: .62rem 1.65rem;
+        font-size: .9rem; font-weight: 600; cursor: pointer;
+        box-shadow: 0 1px 2px rgba(15, 118, 110, 0.2); transition: all .15s ease; font-family: inherit;
+    }
+    .btn-process:hover { background: #115e59; border-color: #115e59; color: #fff; }
+    .btn-process:disabled { background: #cbd5e1; border-color: #cbd5e1; cursor: not-allowed; box-shadow: none; }
+    .btn-save-prog {
+        display: inline-flex; align-items: center; gap: .5rem;
+        background: #059669;
+        color: #fff; border: 1px solid #059669; border-radius: 8px; padding: .52rem 1.25rem;
+        font-size: .86rem; font-weight: 600; cursor: pointer;
+        box-shadow: 0 1px 2px rgba(5, 150, 105, 0.2); transition: all .15s ease; font-family: inherit;
+    }
+    .btn-save-prog:hover { background: #047857; }
+    .btn-save-prog:disabled { background: #cbd5e1; cursor: not-allowed; }
+    .btn-reopen {
+        display: inline-flex; align-items: center; gap: .5rem;
+        background: #fff; color: #b45309; border: 1px solid #fde68a;
+        border-radius: 8px; padding: .52rem 1.15rem; font-size: .85rem; font-weight: 600;
+        cursor: pointer; transition: all .15s; font-family: inherit;
+    }
+    .btn-reopen:hover { background: #fffbeb; border-color: #b45309; }
+    .btn-edit-row { width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; background: #f0fdfa; border: 1px solid #99f6e4; color: #0f766e; border-radius: 6px; padding: 0; font-size: .78rem; cursor: pointer; transition: all .15s; }
+    .btn-edit-row:hover { background: #0f766e; color: #fff; }
+    .btn-del { width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; background: #fff; border: 1px solid #fecaca; color: #dc2626; border-radius: 6px; padding: 0; font-size: .78rem; cursor: pointer; transition: all .15s; }
+    .btn-del:hover { background: #ef4444; color: #fff; }
+    .btn-cancel { background: #ffffff; color: #334155; border: 1px solid #e2e8f0; border-radius: 8px; padding: .52rem 1.15rem; font-size: .85rem; font-weight: 600; cursor: pointer; font-family: inherit; }
+    .btn-cancel:hover { background: #f8fafc; color: #0f172a; }
+
+    /* ── Table Styling ── */
+    .tbl-card-body { padding: 0.85rem 1.25rem 1.25rem !important; }
+    .tbl-resp { width: 100%; border: 1px solid #e2e8f0; border-radius: 10px; overflow-x: auto; background: #fff; }
+    .tbl-data { width: 100%; border-collapse: collapse; font-size: .81rem; }
+    .tbl-data thead th { 
+        background: #f8fafc; 
+        color: #475569; 
+        font-weight: 700; 
+        font-size: .72rem; 
+        letter-spacing: .025em; 
+        text-transform: uppercase; 
+        padding: 10px 12px; 
+        border-bottom: 1px solid #e2e8f0; 
+        white-space: nowrap; 
+        text-align: center;
+    }
+    .tbl-data thead th:first-child, .tbl-data tbody td:first-child { padding-left: 0.85rem; }
+    .tbl-data thead th:last-child, .tbl-data tbody td:last-child { padding-right: 0.85rem; }
+    .tbl-data td { 
+        padding: 9px 12px; 
+        border-bottom: 1px solid #f1f5f9; 
+        color: #0f172a; 
+        vertical-align: middle; 
+        background: #ffffff; 
+        font-size: .81rem;
+        font-variant-numeric: tabular-nums;
+    }
+    .tbl-data td.prog-name {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        text-align: left;
+    }
+    .tbl-data tr:last-child td { border-bottom: none; }
+    .tbl-data tr:hover td { background: #f8fafc; }
+    .tr { text-align: right !important; white-space: nowrap; }
+    .tc { text-align: center !important; }
+    .result-col { color: #047857; font-weight: 800; background: #f0fdf4 !important; }
+
+    /* ── Badges ── */
+    .pill-cost { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; border-radius: 5px; font-size: 10px; padding: 2px 7px; font-weight: 600; display: inline-block; }
+    .pill-benefit { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; border-radius: 5px; font-size: 10px; padding: 2px 7px; font-weight: 600; display: inline-block; }
+
+    /* ── Empty state ── */
+    .empty-state { text-align: center; padding: 3rem 1.5rem; }
+    .empty-state-icon { width: 60px; height: 60px; border-radius: 50%; background: #f0fdfa; color: #0f766e; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; font-size: 1.6rem; }
+    .empty-state p { color: #64748b; margin-top: .4rem; font-size: .84rem; max-width: 460px; margin: 0 auto; }
+
+    /* ── Cell Inline Input ── */
+    .cell-input-nilai {
+        height: 34px !important;
+        font-size: 12.5px !important;
+        font-weight: 600 !important;
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 6px !important;
+        padding: 4px 8px !important;
+        transition: all 0.15s ease-in-out !important;
+    }
+    .cell-input-nilai:focus {
+        border-color: #0f766e !important;
+        box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.15) !important;
+        background-color: #f0fdfa !important;
+    }
+
+    /* ── Nav Pills ── */
+    .nav-pills .nav-link {
+        color: #475569;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        font-weight: 600;
+        font-size: 12.5px;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        transition: all 0.15s;
+    }
+    .nav-pills .nav-link:hover {
+        background: #f1f5f9;
+        color: #0f172a;
+    }
+    .nav-pills .nav-link.active {
+        background: #0f766e !important;
+        color: #ffffff !important;
+        border-color: #0f766e !important;
+    }
+
+    /* ── Active Draft Row ── */
+    .tbl-data tr.row-active td {
+        background-color: #f0fdfa !important;
+    }
+    .tbl-data tr.row-active:hover td {
+        background-color: #e6fcf5 !important;
+    }
+
+    /* ── Aspek Control Bar ── */
+    .aspek-control-bar {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 0.85rem 1.15rem;
+    }
+
+    /* ── Modal Overlay ── */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px); z-index: 2000; align-items: center; justify-content: center; padding: 1rem; }
+    .modal-box     { background: #ffffff; border-radius: 14px; width: 100%; max-width: 580px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); display: flex; flex-direction: column; max-height: 90vh; overflow: hidden; border: 1px solid #e2e8f0; }
+    .modal-head    { display: flex; align-items: center; justify-content: space-between; padding: 1.15rem 1.5rem; border-bottom: 1px solid #e2e8f0; font-weight: 700; font-size: 1rem; color: #0f172a; background: #ffffff; }
+    .modal-close   { width: 30px; height: 30px; background: #f1f5f9; border: none; border-radius: 6px; font-size: 1.1rem; cursor: pointer; color: #64748b; display: flex; align-items: center; justify-content: center; transition: all .15s; }
+    .modal-close:hover { background: #e2e8f0; color: #0f172a; }
+    .modal-body    { padding: 1.4rem 1.5rem; overflow-y: auto; background: #ffffff; }
+    .modal-foot    { display: flex; justify-content: flex-end; gap: .75rem; padding: 1rem 1.5rem; border-top: 1px solid #e2e8f0; background: #f8fafc; }
+</style>
+
+<!-- Top Action Bar with Breadcrumb & Session Button -->
+<div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+    <div class="content-breadcrumb-bar mb-0">
+        <div class="breadcrumb-nav" id="pageBreadcrumb">
+            <span class="breadcrumb-current">Penentuan Prioritas Rekomendasi Keputusan</span>
+            <span class="breadcrumb-separator">/</span>
+        </div>
+    </div>
+    <div class="d-flex align-items-center gap-2 flex-wrap">
+        <button type="button" class="btn btn-white border shadow-xs d-inline-flex align-items-center gap-2 py-2 px-3" id="btnDaftarSesiTop" onclick="openModalDaftarSesi()" style="background:#fff; border-radius:8px; font-size:12.5px; font-weight:600; color:#334155;">
+            <i class="fas fa-folder-open text-teal"></i>
+            <span>Daftar Evaluasi Keputusan</span>
+            <span class="badge font-monospace text-white" id="badgeCountSesiTop" style="background:#0f766e; font-size:11px; border-radius:10px; padding:2px 7px;">0</span>
+        </button>
+        <button type="button" class="btn btn-add" id="btnTambahPengadaanTop" onclick="openParentModal(false)">
+            <i class="fas fa-plus-circle"></i> Tambah Evaluasi Baru
+        </button>
+    </div>
+</div>
+
+@* =========================================================================
+   MODAL: DAFTAR EVALUASI KEPUTUSAN (DRAF & AKTIF)
+   ========================================================================= *@
+<div class="modal-overlay" id="modalDaftarSesi" onclick="closeModalDaftarSesiOverlay(event)">
+    <div class="modal-box" style="max-width: 960px;" onclick="event.stopPropagation()">
+        <div class="modal-head">
+            <div>
+                <div class="d-flex align-items-center gap-2">
+                    <span style="font-size: 15px; font-weight: 700; color: #0f172a;">Daftar Evaluasi Keputusan (Draf &amp; Aktif)</span>
+                    <span class="badge bg-light text-dark border px-2 py-0.5 font-monospace" style="font-size: 11px;" id="modalCountDraf">0 Evaluasi</span>
+                </div>
+                <small class="text-muted fw-normal" style="font-size: 11.5px; display: block; margin-top: 3px;">
+                    Pilih kegiatan evaluasi keputusan yang ingin Anda lanjutkan atau kelola
+                </small>
+            </div>
+            <button type="button" class="modal-close" onclick="closeModalDaftarSesi()">&times;</button>
+        </div>
+        <div class="modal-body p-3">
+            <div class="tbl-resp">
+                <table class="tbl-data" id="tableDaftarDraftPengadaan">
+                    <thead>
+                        <tr>
+                            <th class="tc" style="width: 45px;">No</th>
+                            <th style="width: 140px;">Kode Evaluasi</th>
+                            <th style="text-align: left;">Nama Kegiatan Evaluasi</th>
+                            <th style="width: 115px;">Tanggal</th>
+                            <th style="text-align: left;">Aspek Penilaian</th>
+                            <th class="tc" style="width: 120px;">Kandidat Alternatif</th>
+                            <th class="tc" style="width: 125px;">Status</th>
+                            <th class="tc" style="width: 160px;">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbodyDaftarDraftPengadaan"></tbody>
+                </table>
+            </div>
+        </div>
+        <div class="modal-foot d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <button type="button" class="btn btn-add btn-sm" onclick="closeModalDaftarSesi(); openParentModal(false);">
+                <i class="fas fa-plus-circle me-1"></i> Buat Evaluasi Baru
+            </button>
+            <button type="button" class="btn btn-cancel" onclick="closeModalDaftarSesi()">Tutup</button>
+        </div>
+    </div>
+</div>
+
+@* =========================================================================
+   STATE 1: EMPTY STATE JIKA BELUM ADA DATA EVALUASI KEPUTUSAN
+   ========================================================================= *@
+<div class="kpts-card" id="emptyStateNoPengadaan">
+    <div class="empty-state">
+        <div class="empty-state-icon">
+            <i class="fas fa-folder-plus"></i>
+        </div>
+        <h5 class="fw-bold text-dark mb-1" style="font-size:16px;">Belum Ada Evaluasi Keputusan Aktif</h5>
+        <p class="text-muted mb-3" style="font-size:13px;">
+            Mulai dengan menambahkan kegiatan evaluasi keputusan terlebih dahulu sebelum mendaftarkan kandidat alternatif dan melakukan evaluasi preferensi.
+        </p>
+        <div class="d-flex justify-content-center align-items-center gap-2 flex-wrap">
+            <button type="button" class="btn btn-add" onclick="openParentModal(false)">
+                <i class="fas fa-plus-circle"></i> Buat Evaluasi Baru
+            </button>
+        </div>
+    </div>
+</div>
+
+@* =========================================================================
+   STATE 2: WORKSPACE AKTIF (MUNCUL SETELAH DATA PARENT DIBUAT / AKTIF)
+   ========================================================================= *@
+<div id="workspacePengadaan" style="display:none;">
+
+    <!-- CARD 1: INFORMASI EVALUASI KEPUTUSAN (CARD TERSENDIRI DENGAN BUKA/TUTUP COLLAPSE) -->
+    <div class="kpts-card mb-3" id="cardInfoKegiatanPengadaan">
+        <div class="kpts-card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div role="button" data-bs-toggle="collapse" data-bs-target="#collapseInfoPengadaan" aria-expanded="true" aria-controls="collapseInfoPengadaan" style="cursor: pointer; user-select: none;">
+                <h6 class="mb-0 fw-bold text-dark" style="font-size:14px;">
+                    Informasi Evaluasi Keputusan
+                </h6>
+                <small class="text-muted" style="font-size:11.5px;">Detail identitas dokumen dan parameter kegiatan evaluasi yang sedang aktif</small>
+            </div>
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <button type="button" class="btn btn-sm btn-white border shadow-xs py-1.5 px-3" onclick="openParentModal(true)" style="background:#fff; font-size:12px; border-radius:7px; font-weight:600;">
+                    <i class="fas fa-edit text-muted me-1.5"></i> Edit Info
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-danger py-1.5 px-3" onclick="hapusPengadaanAktif()" style="font-size:12px; border-radius:7px; font-weight:600;">
+                    <i class="fas fa-trash-alt me-1.5"></i> Hapus Draf Ini
+                </button>
+                <button type="button" class="btn btn-sm btn-white border shadow-xs py-1.5 px-2.5" data-bs-toggle="collapse" data-bs-target="#collapseInfoPengadaan" aria-expanded="true" aria-controls="collapseInfoPengadaan" title="Buka / Tutup Panel" style="background:#fff; font-size:12px; border-radius:7px; font-weight:600; color:#475569;">
+                    <i class="fas fa-chevron-up collapse-chevron"></i>
+                </button>
+            </div>
+        </div>
+        <div class="collapse show" id="collapseInfoPengadaan">
+            <div class="kpts-card-body p-3 px-md-4">
+                <table class="table-info-kegiatan" style="border-collapse: collapse; font-size: 13px; border: none; margin: 0; width: auto;">
+                    <tbody>
+                        <tr>
+                            <td style="color: #64748b; font-weight: 600; padding: 4px 0; width: 140px; vertical-align: top; border: none;">Nomor Dokumen</td>
+                            <td style="color: #94a3b8; font-weight: 600; padding: 4px 10px; width: 20px; text-align: center; vertical-align: top; border: none;">:</td>
+                            <td style="padding: 4px 0; vertical-align: top; border: none;"><strong style="color: #0f172a; font-weight: 700;" id="dispKodePengadaan">KPTS-DRAFT</strong></td>
+                        </tr>
+                        <tr>
+                            <td style="color: #64748b; font-weight: 600; padding: 4px 0; width: 140px; vertical-align: top; border: none;">Nama Kegiatan Evaluasi</td>
+                            <td style="color: #94a3b8; font-weight: 600; padding: 4px 10px; text-align: center; vertical-align: top; border: none;">:</td>
+                            <td style="color: #0f172a; font-weight: 700; padding: 4px 0; vertical-align: top; border: none;" id="dispNamaPengadaan">-</td>
+                        </tr>
+                        <tr>
+                            <td style="color: #64748b; font-weight: 600; padding: 4px 0; width: 140px; vertical-align: top; border: none;">Tanggal Evaluasi</td>
+                            <td style="color: #94a3b8; font-weight: 600; padding: 4px 10px; text-align: center; vertical-align: top; border: none;">:</td>
+                            <td style="color: #0f172a; padding: 4px 0; vertical-align: top; border: none;" id="dispTanggalPengadaan">-</td>
+                        </tr>
+                        <tr id="dispWrapCatatan">
+                            <td style="color: #64748b; font-weight: 600; padding: 4px 0; width: 140px; vertical-align: top; border: none;">Catatan / Keterangan</td>
+                            <td style="color: #94a3b8; font-weight: 600; padding: 4px 10px; text-align: center; vertical-align: top; border: none;">:</td>
+                            <td style="color: #64748b; padding: 4px 0; vertical-align: top; border: none;" id="dispCatatanPengadaan">-</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- CARD 2: DAFTAR KANDIDAT ALTERNATIF (CARD TERSENDIRI) -->
+    <div class="kpts-card mb-3" id="cardDaftarSupplier">
+        <div class="kpts-card-body p-3 px-md-4">
+            <!-- Toolbar Header Daftar Alternatif -->
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+                <div>
+                    <div class="d-flex align-items-center gap-2">
+                        <h6 class="mb-0 fw-bold text-dark" style="font-size:14px;">Daftar Kandidat Alternatif</h6>
+                        <span class="badge bg-light text-dark border px-2 py-0.5 font-monospace" style="font-size:11px; border-radius:5px;">
+                            <span id="labelCountSupplier">0</span> Kandidat
+                        </span>
+                    </div>
+                    <small class="text-muted" style="font-size:11.5px;">Kandidat alternatif yang diikutsertakan dalam kegiatan evaluasi keputusan ini</small>
+                </div>
+                <div>
+                    <button type="button" class="btn btn-add btn-sm" onclick="openAddSupplierModal()" style="padding: 0.45rem 1rem; font-size: 12px; border-radius:7px;">
+                        <i class="fas fa-plus-circle me-1.5"></i> Tambah Kandidat Alternatif
+                    </button>
+                </div>
+            </div>
+            <!-- Empty State Alternatif -->
+            <div id="emptySupplierWrap" class="empty-state">
+                <div class="empty-state-icon">
+                    <i class="fas fa-users-viewfinder"></i>
+                </div>
+                <h6 class="fw-bold text-dark mb-1" style="font-size:14px;">Belum Ada Kandidat Alternatif</h6>
+                <p>Belum ada alternatif yang didaftarkan pada evaluasi ini. Klik tombol <strong>Tambah Kandidat Alternatif</strong> di atas untuk mendaftarkan kandidat.</p>
+            </div>
+
+            <!-- Tabel Alternatif -->
+            <div id="wrapTableSupplier" style="display:none;">
+                <div class="tbl-resp">
+                    <table class="tbl-data" id="tableSupplier">
+                        <thead>
+                            <tr>
+                                <th class="tc" style="width: 45px;">No</th>
+                                <th style="width: 130px; text-align: left;">Kode</th>
+                                <th style="text-align: left;">Nama Kandidat Alternatif</th>
+                                <th class="tc" style="width: 80px;">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbodySupplier"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PANEL PENGATURAN ASPEK & BOBOT PRIORITAS KRITERIA (%) -->
+    <div class="kpts-card" id="cardAspekBobot">
+        <div class="kpts-card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div>
+                <h6 class="mb-0 fw-bold text-dark" style="font-size:14px;">
+                    Pengaturan Aspek &amp; Bobot Kriteria
+                </h6>
+                <small class="text-muted" style="font-size:11.5px;">Pilih aspek penilaian dan sesuaikan bobot prioritas kriteria evaluasi</small>
+            </div>
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <span class="badge bg-success-subtle text-success border border-success-subtle px-2.5 py-1.5 fw-bold" id="badgeTotalBobot" style="font-size:11.5px;">
+                    <i class="fas fa-check-circle me-1"></i> Total: 100%
+                </span>
+                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="bagiRataBobot()" style="font-size:11.5px; border-radius:7px; font-weight:600; padding: 0.42rem 0.85rem;">
+                    <i class="fas fa-equals me-1"></i> Bagi Rata (%)
+                </button>
+                <button type="button" class="btn btn-success btn-sm" id="btnSimpanBobotDb" onclick="simpanBobotParameterKeDatabase()" style="font-size:11.5px; border-radius:7px; font-weight:600; padding: 0.42rem 0.95rem;">
+                    <i class="fas fa-save me-1"></i> Simpan Bobot ke DB
+                </button>
+            </div>
+        </div>
+        <div class="kpts-card-body">
+            <!-- Pilihan Aspek Kriteria Penilaian -->
+            <div class="aspek-control-bar mb-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
+                <div class="d-flex align-items-center gap-2.5 flex-grow-1" style="min-width:280px; max-width:480px;">
+                    <label class="form-label mb-0 fw-bold text-dark" for="selectAspekWorkspace" style="font-size:12.5px; white-space:nowrap;">
+                        <i class="fas fa-layer-group text-teal me-1"></i> Aspek Penilaian:
+                    </label>
+                    <select id="selectAspekWorkspace" class="form-control form-control-sm fw-semibold" onchange="onAspekWorkspaceChanged(this.value)">
+                        <option value="">-- Memuat Aspek... --</option>
+                    </select>
+                </div>
+                <div class="text-muted" style="font-size:11.5px;">
+                    <i class="fas fa-info-circle text-teal me-1"></i> Pilih aspek untuk menentukan parameter kriteria evaluasi
+                </div>
+            </div>
+
+            <div class="tbl-resp">
+                <table class="tbl-data" id="tableBobotKriteria">
+                    <thead>
+                        <tr>
+                            <th class="tc" style="width: 45px;">No</th>
+                            <th style="width: 110px; text-align: left;">Kode</th>
+                            <th style="text-align: left;">Nama Parameter Kriteria</th>
+                            <th class="tc" style="width: 130px;">Satuan</th>
+                            <th class="tc" style="width: 120px;">Sifat Kriteria</th>
+                            <th class="tc" style="width: 170px;">Bobot Prioritas (%)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbodyBobotKriteria">
+                        <tr>
+                            <td colspan="6" class="tc py-4 text-muted">
+                                <i class="fas fa-spinner fa-spin me-1"></i> Memuat parameter kriteria...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- PANEL LEMBAR PENILAIAN MATRIKS NILAI ALTERNATIF -->
+    <div class="kpts-card" id="cardLembarPenilaian">
+        <div class="kpts-card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div>
+                <h6 class="mb-0 fw-bold text-dark" style="font-size:14px;">
+                    Lembar Matriks Nilai Kandidat Alternatif
+                </h6>
+                <small class="text-muted" style="font-size:11.5px;">Isikan nilai riil setiap kandidat alternatif pada masing-masing parameter tolok ukur evaluasi</small>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <button type="button" class="btn btn-outline-success btn-sm" onclick="simpanDrafKeputusan()" style="font-size:11.5px; border-radius:7px; font-weight:600; padding: 0.42rem 0.85rem;">
+                    <i class="fas fa-save me-1"></i> Simpan Draf Evaluasi
+                </button>
+            </div>
+        </div>
+        <div class="kpts-card-body">
+            <!-- Tabel Matriks Penilaian -->
+            <div class="tbl-resp mb-3" style="max-height: 480px; overflow-y: auto;">
+                <table class="tbl-data" id="tableMatriksPenilaian">
+                    <thead>
+                        <tr id="tableHeadMatriks">
+                            <th class="tc" style="width: 45px;">No</th>
+                            <th style="min-width: 200px; text-align: left;">Nama Kandidat Alternatif</th>
+                            <!-- Parameter kolom dirender dinamis -->
+                        </tr>
+                    </thead>
+                    <tbody id="tbodyMatriksPenilaian">
+                        <tr>
+                            <td colspan="2" class="tc py-4 text-muted">
+                                Tambahkan kandidat alternatif pada panel di atas terlebih dahulu.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Tombol Aksi Hitung Keputusan -->
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 pt-3 mt-1 border-top">
+                <div id="prosesMsg" class="msg-error" style="display:none; font-size:12px;"></div>
+                <div class="text-muted d-flex align-items-center gap-1.5" style="font-size:11.5px;" id="infoTextPenilaian">
+                    <i class="fas fa-info-circle text-teal"></i>
+                    <span>Pastikan minimal 2 kandidat alternatif terdaftar dan seluruh kolom nilai telah terisi.</span>
+                </div>
+                <div class="d-flex align-items-center gap-2 ms-auto">
+                    <button type="button" class="btn btn-process" id="btnHitung" onclick="hitungKeputusan()">
+                        <i class="fas fa-calculator me-1.5"></i> Hitung Rekomendasi Prioritas
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PANEL HASIL PERANGKINGAN & PRIORITAS ALTERNATIF TERBAIK -->
+    <div class="kpts-card shadow-sm" id="cardHasil" style="display:none; border: 1.5px solid #0f766e;">
+        <div class="kpts-card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div>
+                <h6 class="mb-0 fw-bold text-dark" style="font-size:14.5px;">
+                    Hasil Perangkingan &amp; Prioritas Rekomendasi Keputusan
+                </h6>
+                <small class="text-muted" style="font-size:11.5px;">Rekomendasi prioritas alternatif terbaik hasil evaluasi multi-kriteria terbobot</small>
+            </div>
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <button type="button" class="btn btn-save-prog" id="btnSimpanHasil" onclick="simpanHasilKeHistory()">
+                    <i class="fas fa-check-circle me-1"></i> Simpan ke Riwayat Keputusan
+                </button>
+                <button type="button" class="btn btn-reopen" onclick="kembaliKePenilaian()">
+                    <i class="fas fa-edit me-1"></i> Edit &amp; Hitung Ulang
+                </button>
+            </div>
+        </div>
+        <div class="kpts-card-body">
+            <div class="msg-info mb-3">
+                <i class="fas fa-info-circle"></i>
+                <div>
+                    Tabel di bawah menjabarkan <b>Nilai Riil</b>, <b>Nilai Normalisasi (0-100%)</b>, dan <b>Poin Kontribusi Terbobot (%)</b> yang diperoleh masing-masing kandidat alternatif.
+                </div>
+            </div>
+            <div class="tbl-resp" style="max-height: 480px; overflow-y: auto;">
+                <table class="tbl-data" id="tableDetailNilaiParam">
+                    <thead id="tableDetailHead"></thead>
+                    <tbody id="tableDetailBody"></tbody>
+                </table>
+            </div>
+
+            <!-- Hidden tableRanking for internal JS compatibility -->
+            <table id="tableRanking" style="display:none;"><tbody id="tableRankingBody"></tbody></table>
+        </div>
+    </div>
+
+</div>
+
+@* =========================================================================
+   MODAL: TAMBAH / UBAH DATA EVALUASI KEPUTUSAN (DATA PARENT)
+   ========================================================================= *@
+<div class="modal-overlay" id="modalParentPengadaan" onclick="closeParentModalOverlay(event)">
+    <div class="modal-box" onclick="event.stopPropagation()">
+        <div class="modal-head">
+            <span id="modalParentTitle">Data Kegiatan Evaluasi Keputusan</span>
+            <button type="button" class="modal-close" onclick="closeParentModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group mb">
+                <label class="form-label lbl-req">Nama Kegiatan Evaluasi</label>
+                <input type="text" id="mNamaPengadaan" class="form-control" placeholder="Contoh: Penentuan Prioritas Alternatif Pengadaan Q1 2026" maxlength="200" />
+                <div class="field-error" id="mErrNamaPengadaan"></div>
+            </div>
+
+            <div class="form-group mb">
+                <label class="form-label lbl-req">Tanggal Evaluasi</label>
+                <input type="date" id="mTanggalPengadaan" class="form-control" />
+            </div>
+
+            <div class="form-group mb-0">
+                <label class="form-label">Catatan / Keterangan Evaluasi</label>
+                <textarea id="mCatatanPengadaan" class="form-control" placeholder="Catatan singkat terkait tujuan atau batasan evaluasi keputusan..." maxlength="255" rows="3" style="min-height:70px; resize:vertical;"></textarea>
+            </div>
+        </div>
+        <div class="modal-foot">
+            <button type="button" class="btn-cancel" onclick="closeParentModal()">Batal</button>
+            <button type="button" class="btn-add" id="btnSaveParent" onclick="saveParentPengadaan()">
+                <i class="fas fa-check-circle me-1"></i> Simpan &amp; Lanjutkan
+            </button>
+        </div>
+    </div>
+</div>
+
+@* =========================================================================
+   MODAL: TAMBAH / EDIT DATA KANDIDAT ALTERNATIF
+   ========================================================================= *@
+<div class="modal-overlay" id="modalOverlaySupplier" onclick="closeSupplierModalOverlay(event)">
+    <div class="modal-box" onclick="event.stopPropagation()">
+        <div class="modal-head">
+            <span id="modalTitleSupplier">Tambah Kandidat Alternatif</span>
+            <button type="button" class="modal-close" onclick="closeSupplierModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="editSupplierId" value="" />
+            
+            <div class="form-group mb">
+                <label class="form-label lbl-req">Nama Kandidat Alternatif</label>
+                <input type="text" id="mNamaSupplier" class="form-control" placeholder="Contoh: Alternatif A / Lokasi 1 / Rekanan X" maxlength="200" />
+                <div class="field-error" id="mErrNamaSupplier"></div>
+            </div>
+
+        </div>
+        <div class="modal-foot">
+            <button type="button" class="btn-cancel" onclick="closeSupplierModal()">Batal</button>
+            <button type="button" class="btn-add" id="btnSaveSupplier" onclick="saveSupplierFromModal()">
+                <i class="fas fa-save me-1"></i> Simpan Alternatif
+            </button>
+        </div>
+    </div>
+</div>
+
+
+
+@* =========================================================================
+   SCRIPTS: STATE MANAGEMENT & DYNAMIC PARENT-CHILD FLOW
+   ========================================================================= *@
+@section Scripts {
+<script>
+    // State Aplikasi
+    var allAspeks = [];
+    var allParameters = [];
+    var allSuppliers = [];
+    var allDraftKeputusans = [];
+
+    var currentSessionId = null;
+    var currentSessionKode = null;
+    var currentSessionStatus = "Draft";
+
+    // Data Parent Aktif
+    var currentParent = null; // { nama, tanggal, aspekId, catatan }
+    var isEditingParent = false;
+
+    var currentAspekId = null;
+    var activeParameters = [];   // [{ id, kode, nama, satuan, sifat, bobot }]
+    var activeSuppliers = [];    // [{ id, kode, nama }]
+    var cellValues = {};         // { [supId_paramId]: value }
+    var lastCalcResult = null;
+
+    function esc(s) {
+        return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function escapeAttr(str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/'/g, '&#39;')
+            .replace(/"/g, '&quot;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+    }
+
+    // ================================================================
+    // 1. INISIALISASI & LOAD DATA
+    // ================================================================
+    $(function () {
+        var today = new Date().toISOString().split('T')[0];
+        $('#mTanggalPengadaan').val(today);
+
+        var urlParams = new URLSearchParams(window.location.search);
+        var targetSessionId = urlParams.get('id') || localStorage.getItem('activePengadaanId');
+
+        loadInitialData(targetSessionId);
+    });
+
+    function loadInitialData(targetSessionId) {
+        $.when(
+            $.ajax({ url: API_BASE_URL + '/aspeks', type: 'GET', dataType: 'json' }),
+            $.ajax({ url: API_BASE_URL + '/parameters', type: 'GET', dataType: 'json' }),
+            $.ajax({ url: API_BASE_URL + '/suppliers', type: 'GET', dataType: 'json' }),
+            $.ajax({ url: API_BASE_URL + '/keputusans', type: 'GET', dataType: 'json' })
+        ).done(function (aspeksRes, paramsRes, suppliersRes, keputusansRes) {
+            allAspeks = (aspeksRes && aspeksRes[0]) ? aspeksRes[0] : [];
+            allParameters = (paramsRes && paramsRes[0]) ? paramsRes[0] : [];
+            allSuppliers = (suppliersRes && suppliersRes[0]) ? suppliersRes[0] : [];
+
+            var rawKeputusans = (keputusansRes && keputusansRes[0]) ? keputusansRes[0] : [];
+            allDraftKeputusans = rawKeputusans.filter(function (k) {
+                return k.status === 'Draft' || !k.status || k.status === '';
+            });
+
+            renderWorkspaceAspekSelect();
+            renderDaftarDraftPengadaan();
+
+            var sessionToOpen = null;
+            if (targetSessionId) {
+                var found = allDraftKeputusans.find(function (d) { return d.id === targetSessionId; });
+                if (found) sessionToOpen = found.id;
+            }
+
+            if (!sessionToOpen && allDraftKeputusans.length > 0) {
+                sessionToOpen = allDraftKeputusans[0].id;
+            }
+
+            if (sessionToOpen) {
+                loadSessionById(sessionToOpen);
+            } else {
+                $('#cardDaftarKegiatanPengadaan').hide();
+                $('#workspacePengadaan').hide();
+                $('#emptyStateNoPengadaan').fadeIn(200);
+            }
+        }).fail(function () {
+            $.get(API_BASE_URL + '/aspeks', function (d) { allAspeks = d || []; renderWorkspaceAspekSelect(); });
+            $.get(API_BASE_URL + '/parameters', function (d) { allParameters = d || []; });
+            $.get(API_BASE_URL + '/suppliers', function (d) { allSuppliers = d || []; });
+            $.get(API_BASE_URL + '/keputusans', function (d) {
+                var raw = d || [];
+                allDraftKeputusans = raw.filter(function (k) { return k.status === 'Draft' || !k.status || k.status === ''; });
+                renderDaftarDraftPengadaan();
+                if (targetSessionId) loadSessionById(targetSessionId);
+                else if (allDraftKeputusans.length > 0) loadSessionById(allDraftKeputusans[0].id);
+            });
+        });
+    }
+
+    // ================================================================
+    // 2. DAFTAR KEGIATAN PENGADAAN (DRAF) / MODAL SESI
+    // ================================================================
+    function openModalDaftarSesi() {
+        renderDaftarDraftPengadaan();
+        $('#modalDaftarSesi').css('display', 'flex');
+    }
+
+    function closeModalDaftarSesi() {
+        $('#modalDaftarSesi').hide();
+    }
+
+    function closeModalDaftarSesiOverlay(ev) {
+        if (ev && ev.target === $('#modalDaftarSesi')[0]) {
+            closeModalDaftarSesi();
+        }
+    }
+
+    function renderDaftarDraftPengadaan() {
+        var count = allDraftKeputusans.length;
+        $('#badgeCountSesiTop').text(count);
+        $('#modalCountDraf').text(count + ' Sesi');
+
+        if (count === 0) {
+            $('#btnDaftarSesiTop').hide();
+            closeModalDaftarSesi();
+            if (!currentSessionId) {
+                $('#workspacePengadaan').hide();
+                $('#emptyStateNoPengadaan').show();
+            }
+            return;
+        }
+
+        $('#btnDaftarSesiTop').show();
+        $('#emptyStateNoPengadaan').hide();
+
+        var html = '';
+        for (var i = 0; i < allDraftKeputusans.length; i++) {
+            var d = allDraftKeputusans[i];
+            var isActive = (d.id === currentSessionId);
+            var rowClass = isActive ? 'row-active' : '';
+
+            var tglFormatted = d.tanggalKeputusan
+                ? new Date(d.tanggalKeputusan).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' })
+                : '-';
+
+            var statusBadge = isActive
+                ? '<span class="badge bg-success text-white px-2 py-1"><i class="fas fa-check-circle me-1"></i> Sedang Aktif</span>'
+                : '<span class="badge bg-secondary-subtle text-secondary border px-2 py-1">Draf</span>';
+
+            var actionBtn = isActive
+                ? '<button type="button" class="btn btn-sm text-white px-2.5 py-1" style="font-size:11.5px; background:#0f766e; border-color:#0f766e; font-weight:600;" onclick="closeModalDaftarSesi(); scrollKeWorkspace();" title="Evaluasi ini sedang aktif dibuka"><i class="fas fa-check me-1"></i> Sedang Dibuka</button>'
+                : '<button type="button" class="btn btn-sm btn-outline-primary px-2.5 py-1" style="font-size:11.5px; font-weight:600;" onclick="pilihDraftPengadaan(\'' + d.id + '\')" title="Pilih dan buka evaluasi ini"><i class="fas fa-play me-1"></i> Buka Evaluasi</button>';
+
+            var deleteBtn = '<button type="button" class="btn btn-del ms-1.5" title="Hapus draf evaluasi ini" onclick="hapusDraftPengadaan(\'' + d.id + '\', \'' + escapeAttr(d.namaKeputusan) + '\')"><i class="fas fa-trash-alt"></i></button>';
+
+            html += '<tr class="' + rowClass + '">' +
+                '<td class="tc" style="color:#0f172a; font-weight:600; font-size:13px;">' + (i + 1) + '</td>' +
+                '<td><strong style="color:#0f172a; font-size:13px;">' + esc(d.kodeKeputusan || 'KPTS-DRAFT') + '</strong></td>' +
+                '<td>' +
+                    '<a href="javascript:void(0)" onclick="pilihDraftPengadaan(\'' + d.id + '\')" class="fw-bold text-decoration-none" style="color:#0f172a; font-size:13px;" title="' + esc(d.keterangan || d.namaKeputusan) + '">' + esc(d.namaKeputusan) + '</a>' +
+                '</td>' +
+                '<td class="tc text-muted" style="font-size:11.5px;"><i class="fas fa-calendar-alt text-teal me-1"></i> ' + tglFormatted + '</td>' +
+                '<td style="font-size:12px;">' + ((d.namaAspek && d.namaAspek !== '-') ? ('<i class="fas fa-layer-group text-indigo me-1"></i> ' + esc(d.namaAspek)) : '<span class="badge bg-light text-secondary border fw-normal" style="font-size:10.5px;">Belum Dipilih</span>') + '</td>' +
+                '<td class="tc">' +
+                    '<span class="badge bg-light text-dark border px-2 py-1 font-monospace" style="font-size:11px;">' +
+                        '<i class="fas fa-cube text-teal me-1"></i> ' + (d.jumlahSupplier || 0) + ' Kandidat' +
+                    '</span>' +
+                '</td>' +
+                '<td class="tc">' + statusBadge + '</td>' +
+                '<td class="tc">' +
+                    '<div class="d-inline-flex align-items-center justify-content-center">' +
+                        actionBtn +
+                        deleteBtn +
+                    '</div>' +
+                '</td>' +
+            '</tr>';
+        }
+
+        $('#tbodyDaftarDraftPengadaan').html(html);
+    }
+
+    function refreshDraftList(callback) {
+        $.ajax({
+            url: API_BASE_URL + '/keputusans?status=Draft',
+            type: 'GET',
+            dataType: 'json',
+            success: function (res) {
+                var raw = res || [];
+                allDraftKeputusans = raw.filter(function (k) {
+                    return k.status === 'Draft' || !k.status || k.status === '';
+                });
+                renderDaftarDraftPengadaan();
+                if (callback) callback(allDraftKeputusans);
+            },
+            error: function () {
+                if (callback) callback(allDraftKeputusans);
+            }
+        });
+    }
+
+    function pilihDraftPengadaan(id) {
+        if (!id) return;
+        closeModalDaftarSesi();
+        if (currentSessionId === id) {
+            scrollKeWorkspace();
+            return;
+        }
+
+        if (currentParent && currentSessionId) {
+            simpanDrafKeputusan(true);
+        }
+
+        loadSessionById(id);
+        scrollKeWorkspace();
+    }
+
+    function scrollKeWorkspace() {
+        $('#workspacePengadaan').show();
+        $('html, body').animate({
+            scrollTop: $('#workspacePengadaan').offset().top - 20
+        }, 400);
+    }
+
+    // ================================================================
+    // 3. MODAL DATA PARENT (EVALUASI KEPUTUSAN) & ASPEK WORKSPACE
+    // ================================================================
+    function renderWorkspaceAspekSelect() {
+        var $sel = $('#selectAspekWorkspace');
+        $sel.empty();
+
+        $sel.append('<option value="">-- Pilih Aspek Penilaian --</option>');
+
+        if (allAspeks.length === 0) {
+            return;
+        }
+
+        for (var i = 0; i < allAspeks.length; i++) {
+            var a = allAspeks[i];
+            var count = (a.parameters || []).length;
+            $sel.append('<option value="' + a.id + '">' + esc(a.kodeAspek) + ' - ' + esc(a.namaAspek) + ' (' + count + ' Kriteria)</option>');
+        }
+
+        if (currentAspekId) {
+            $sel.val(currentAspekId);
+        } else {
+            $sel.val('');
+        }
+
+        updateDispAspek();
+    }
+
+    function onAspekWorkspaceChanged(newAspekId) {
+        currentAspekId = newAspekId ? newAspekId : null;
+        if (currentParent) {
+            currentParent.aspekId = currentAspekId;
+        }
+
+        updateDispAspek();
+        updateActiveParameters();
+        renderMatriksPenilaian();
+        if (currentSessionId && currentAspekId) {
+            simpanDrafKeputusan(true);
+        }
+
+        if (window.AdminToast) {
+            if (currentAspekId) {
+                var asp = allAspeks.find(function (a) { return a.id === currentAspekId; });
+                AdminToast.info('Aspek kriteria diubah ke: ' + (asp ? asp.namaAspek : ''));
+            } else {
+                AdminToast.info('Silakan pilih aspek penilaian.');
+            }
+        }
+    }
+
+    function updateDispAspek() {
+        if (!currentAspekId) {
+            $('#dispAspekPengadaan').html('<strong class="text-secondary">Belum Dipilih</strong>');
+            return;
+        }
+        var asp = allAspeks.find(function (a) { return a.id === currentAspekId; });
+        $('#dispAspekPengadaan').html('<strong class="text-dark">' + esc(asp ? (asp.kodeAspek + ' - ' + asp.namaAspek) : '-') + '</strong>');
+    }
+
+    function openParentModal(isEdit) {
+        isEditingParent = !!isEdit;
+        $('#mErrNamaPengadaan').text('');
+
+        if (isEditingParent && currentParent) {
+            $('#modalParentTitle').text('Edit Evaluasi Keputusan');
+            $('#mNamaPengadaan').val(currentParent.nama || '');
+            $('#mTanggalPengadaan').val(currentParent.tanggal || new Date().toISOString().split('T')[0]);
+            $('#mCatatanPengadaan').val(currentParent.catatan || '');
+            $('#btnSaveParent').html('<i class="fas fa-check-circle me-1"></i> Simpan Perubahan');
+        } else {
+            currentAspekId = null;
+            $('#modalParentTitle').text('Tambah Evaluasi Keputusan Baru');
+            $('#mNamaPengadaan').val('');
+            var today = new Date().toISOString().split('T')[0];
+            $('#mTanggalPengadaan').val(today);
+            $('#mCatatanPengadaan').val('');
+            $('#btnSaveParent').html('<i class="fas fa-check-circle me-1"></i> Simpan &amp; Lanjutkan');
+        }
+
+        $('#modalParentPengadaan').css('display', 'flex');
+        $('#mNamaPengadaan').focus();
+    }
+
+    function closeParentModal() {
+        $('#modalParentPengadaan').hide();
+    }
+
+    function closeParentModalOverlay(ev) {
+        if (ev && ev.target === $('#modalParentPengadaan')[0]) {
+            closeParentModal();
+        }
+    }
+
+    function saveParentPengadaan() {
+        var nama = $('#mNamaPengadaan').val().trim();
+        var tgl = $('#mTanggalPengadaan').val();
+        var catatan = $('#mCatatanPengadaan').val().trim();
+
+        if (!nama) {
+            $('#mErrNamaPengadaan').text('Nama kegiatan evaluasi wajib diisi.');
+            $('#mNamaPengadaan').focus();
+            return;
+        }
+
+        var defaultAspekId = isEditingParent ? (currentAspekId || null) : null;
+
+        var $btn = $('#btnSaveParent');
+        $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i> Menyimpan ke DB...');
+
+        var targetId = isEditingParent ? (currentSessionId || null) : null;
+        var targetKode = isEditingParent ? (currentSessionKode || null) : null;
+
+        var details = [];
+        if (isEditingParent && activeSuppliers.length > 0) {
+            details = activeSuppliers.map(function (sup) {
+                var isGuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(sup.id);
+                return {
+                    supplierId: isGuid ? sup.id : null,
+                    namaSupplier: sup.nama,
+                    statusRekomendasi: "Draft",
+                    nilais: activeParameters.map(function (p) {
+                        var rawVal = cellValues[sup.id + '_' + p.id];
+                        var parsed = parseFloat(rawVal);
+                        return {
+                            parameterId: p.id,
+                            nilaiRiil: isNaN(parsed) ? 0 : parsed
+                        };
+                    })
+                };
+            });
+        }
+
+        var payload = {
+            id: targetId,
+            kodeKeputusan: targetKode,
+            namaKeputusan: nama,
+            tanggalKeputusan: tgl ? new Date(tgl) : new Date(),
+            aspekId: defaultAspekId,
+            keterangan: catatan || null,
+            status: "Draft",
+            details: details
+        };
+
+        $.ajax({
+            url: API_BASE_URL + '/keputusans',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(payload),
+            dataType: 'json',
+            success: function (res) {
+                $btn.prop('disabled', false).html('<i class="fas fa-check-circle me-1"></i> ' + (isEditingParent ? 'Simpan Perubahan' : 'Simpan &amp; Lanjutkan'));
+
+                closeParentModal();
+
+                if (isEditingParent) {
+                    currentParent.nama = nama;
+                    currentParent.tanggal = tgl;
+                    currentParent.catatan = catatan;
+
+                    $('#dispNamaPengadaan').text(nama);
+                    $('#dispTanggalPengadaan').text(tgl ? new Date(tgl).toLocaleDateString('id-ID') : '-');
+                    $('#dispCatatanPengadaan').text(catatan || '-');
+
+                    refreshDraftList();
+                    if (window.AdminToast) AdminToast.success('Data evaluasi keputusan berhasil diperbarui.');
+                } else {
+                    currentSessionId = res.id;
+                    currentSessionKode = res.kode;
+                    currentSessionStatus = "Draft";
+
+                    refreshDraftList(function () {
+                        loadSessionById(res.id);
+                        scrollKeWorkspace();
+                    });
+
+                    if (window.AdminToast) AdminToast.success('Evaluasi keputusan baru berhasil dibuat.');
+                }
+            },
+            error: function (xhr) {
+                $btn.prop('disabled', false).html('<i class="fas fa-check-circle me-1"></i> ' + (isEditingParent ? 'Simpan Perubahan' : 'Simpan &amp; Lanjutkan'));
+                var errMsg = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : 'Gagal menyimpan evaluasi keputusan.';
+                alert(errMsg);
+            }
+        });
+    }
+
+    // ================================================================
+    // 3. ASPEK & PARAMETER LOGIC
+    // ================================================================
+    function updateActiveParameters() {
+        if (!currentAspekId) {
+            activeParameters = [];
+            renderBobotTable();
+            renderMatriksPenilaian();
+            return;
+        }
+
+        var asp = allAspeks.find(function (a) { return a.id === currentAspekId; });
+        var params = (asp && asp.parameters && asp.parameters.length > 0)
+            ? asp.parameters
+            : allParameters.filter(function (p) { return p.aspekId === currentAspekId; });
+
+        var count = params.length;
+        var equalShare = count > 0 ? Math.floor(100 / count) : 0;
+        var remainder = count > 0 ? (100 - (equalShare * count)) : 0;
+
+        var dbWeightsSum = 0;
+        for (var i = 0; i < params.length; i++) {
+            dbWeightsSum += (params[i].bobot || 0);
+        }
+        var useDbWeights = (dbWeightsSum > 0);
+
+        activeParameters = params.map(function (p, idx) {
+            var w = useDbWeights ? (p.bobot !== undefined && p.bobot !== null ? p.bobot : 0) : (equalShare + (idx === 0 ? remainder : 0));
+            return {
+                id: p.id,
+                kode: p.kodeParameter,
+                nama: p.namaParameter,
+                satuan: p.satuan || '',
+                sifat: p.sifatKriteria || 'Cost',
+                bobot: w
+            };
+        });
+
+        renderBobotTable();
+        renderMatriksPenilaian();
+    }
+
+    function renderBobotTable() {
+        if (!currentAspekId) {
+            $('#tbodyBobotKriteria').html('<tr><td colspan="6" class="tc py-4 text-muted"><i class="fas fa-layer-group text-teal me-1"></i> Silakan pilih aspek penilaian terlebih dahulu pada pilihan di atas.</td></tr>');
+            $('#badgeTotalBobot').html('<i class="fas fa-info-circle me-1"></i> Pilih Aspek').attr('class', 'badge bg-light text-muted border px-2.5 py-1.5 fw-bold');
+            return;
+        }
+
+        if (activeParameters.length === 0) {
+            $('#tbodyBobotKriteria').html('<tr><td colspan="6" class="tc py-4 text-muted">Belum ada parameter kriteria pada aspek yang dipilih.</td></tr>');
+            $('#badgeTotalBobot').html('<i class="fas fa-exclamation-circle me-1"></i> 0 Parameter').attr('class', 'badge bg-warning-subtle text-warning border border-warning-subtle px-2.5 py-1.5 fw-bold');
+            return;
+        }
+
+        var html = '';
+        var totalBobot = 0;
+        for (var i = 0; i < activeParameters.length; i++) {
+            var p = activeParameters[i];
+            totalBobot += p.bobot;
+            var sifatBadge = p.sifat === 'Cost'
+                ? '<span class="pill-cost"><i class="fas fa-arrow-down"></i> Cost</span>'
+                : '<span class="pill-benefit"><i class="fas fa-arrow-up"></i> Benefit</span>';
+
+            html += '<tr>' +
+                '<td class="tc" style="color:#0f172a; font-weight:600; font-size:13px;">' + (i + 1) + '</td>' +
+                '<td><strong style="color:#0f172a; font-size:13px;">' + esc(p.kode) + '</strong></td>' +
+                '<td class="prog-name"><strong style="color:#0f172a; font-size:13px;">' + esc(p.nama) + '</strong></td>' +
+                '<td class="tc" style="color:#0f172a; font-weight:500; font-size:13px;">' + esc(p.satuan || '-') + '</td>' +
+                '<td class="tc">' + sifatBadge + '</td>' +
+                '<td class="tc">' +
+                    '<div class="input-group input-group-sm mx-auto" style="max-width:120px;">' +
+                        '<input type="number" min="0" max="100" step="any" class="form-control text-end font-monospace fw-bold" ' +
+                        'value="' + p.bobot + '" oninput="onBobotCellChanged(\'' + p.id + '\', this.value)" style="font-size:12px;" />' +
+                        '<span class="input-group-text fw-bold" style="font-size:11px;">%</span>' +
+                    '</div>' +
+                '</td>' +
+            '</tr>';
+        }
+        $('#tbodyBobotKriteria').html(html);
+        updateBobotBadges(totalBobot);
+    }
+
+    function onBobotCellChanged(paramId, val) {
+        var p = activeParameters.find(function (item) { return item.id === paramId; });
+        if (p) p.bobot = parseFloat(val) || 0;
+
+        var total = 0;
+        for (var i = 0; i < activeParameters.length; i++) {
+            total += activeParameters[i].bobot;
+        }
+        total = Math.round(total * 10) / 10;
+        updateBobotBadges(total);
+    }
+
+    function updateBobotBadges(total) {
+        var $badge = $('#badgeTotalBobot');
+        if (Math.abs(total - 100) < 0.01) {
+            $badge.html('<i class="fas fa-check-circle me-1"></i> Total: 100%')
+                  .attr('class', 'badge bg-success-subtle text-success border border-success-subtle px-2.5 py-1.5 fw-bold');
+        } else {
+            $badge.html('<i class="fas fa-exclamation-triangle me-1"></i> Total: ' + total + '% (Harus 100%)')
+                  .attr('class', 'badge bg-warning-subtle text-warning border border-warning-subtle px-2.5 py-1.5 fw-bold');
+        }
+    }
+
+    function bagiRataBobot() {
+        var count = activeParameters.length;
+        if (count === 0) return;
+        var equalShare = Math.floor(100 / count);
+        var remainder = 100 - (equalShare * count);
+
+        for (var i = 0; i < count; i++) {
+            activeParameters[i].bobot = equalShare + (i === 0 ? remainder : 0);
+        }
+        renderBobotTable();
+        if (window.AdminToast) AdminToast.info('Bobot prioritas kriteria berhasil dibagi rata 100%.');
+    }
+
+    function simpanBobotParameterKeDatabase() {
+        if (activeParameters.length === 0) return;
+
+        var total = 0;
+        for (var i = 0; i < activeParameters.length; i++) {
+            total += activeParameters[i].bobot;
+        }
+        total = Math.round(total * 10) / 10;
+
+        if (Math.abs(total - 100) > 0.01) {
+            Swal.fire('Validasi Bobot', 'Total akumulasi bobot prioritas kriteria harus tepat 100% (saat ini: ' + total + '%).', 'warning');
+            return;
+        }
+
+        var items = activeParameters.map(function (p) {
+            return { id: p.id, bobot: p.bobot };
+        });
+
+        $('#btnSimpanBobotDb').prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i> Menyimpan...');
+
+        $.ajax({
+            url: API_BASE_URL + '/parameters/batch-bobot',
+            type: 'PUT',
+            contentType: 'application/json',
+            data: JSON.stringify(items),
+            dataType: 'json',
+            success: function (res) {
+                $('#btnSimpanBobotDb').prop('disabled', false).html('<i class="fas fa-save me-1"></i> Simpan Bobot ke DB');
+                if (window.AdminToast) AdminToast.success(res.message || 'Bobot kriteria berhasil disimpan ke database!');
+                else Swal.fire('Sukses', 'Bobot kriteria berhasil disimpan ke database!', 'success');
+            },
+            error: function () {
+                $('#btnSimpanBobotDb').prop('disabled', false).html('<i class="fas fa-save me-1"></i> Simpan Bobot ke DB');
+                Swal.fire('Gagal', 'Gagal menyimpan bobot kriteria.', 'error');
+            }
+        });
+    }
+
+    // ================================================================
+    // 4. DAFTAR KANDIDAT ALTERNATIF
+    // ================================================================
+    function openAddSupplierModal() {
+        clearSupplierModalErrors();
+        $('#editSupplierId').val('');
+        $('#modalTitleSupplier').text('Tambah Kandidat Alternatif');
+        $('#mNamaSupplier').val('');
+
+        $('#modalOverlaySupplier').css('display', 'flex');
+        $('#mNamaSupplier').focus();
+    }
+
+    function openEditSupplierModal(id) {
+        var sup = activeSuppliers.find(function (s) { return s.id === id; });
+        if (!sup) return;
+
+        clearSupplierModalErrors();
+        $('#editSupplierId').val(sup.id);
+        $('#modalTitleSupplier').text('Edit Kandidat Alternatif');
+        $('#mNamaSupplier').val(sup.nama);
+
+        $('#modalOverlaySupplier').css('display', 'flex');
+        $('#mNamaSupplier').focus();
+    }
+
+    function closeSupplierModal() {
+        $('#modalOverlaySupplier').hide();
+    }
+
+    function closeSupplierModalOverlay(ev) {
+        if (ev && ev.target === $('#modalOverlaySupplier')[0]) {
+            closeSupplierModal();
+        }
+    }
+
+    function clearSupplierModalErrors() {
+        $('#mErrNamaSupplier').text('');
+    }
+
+    function saveSupplierFromModal() {
+        clearSupplierModalErrors();
+        var editId = $('#editSupplierId').val();
+        var nama = $('#mNamaSupplier').val().trim();
+
+        if (!nama) {
+            $('#mErrNamaSupplier').text('Nama kandidat alternatif wajib diisi.');
+            $('#mNamaSupplier').focus();
+            return;
+        }
+
+        var isDuplicate = activeSuppliers.some(function (s) {
+            return s.nama.toLowerCase() === nama.toLowerCase() && s.id !== editId;
+        });
+        if (isDuplicate) {
+            $('#mErrNamaSupplier').text('Nama kandidat alternatif sudah terdaftar pada kegiatan ini.');
+            return;
+        }
+
+        var $btn = $('#btnSaveSupplier');
+        $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i> Menyimpan ke DB...');
+
+        if (editId) {
+            var isGuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(editId);
+            if (isGuid) {
+                $.ajax({
+                    url: API_BASE_URL + '/suppliers/' + editId,
+                    type: 'PUT',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ namaSupplier: nama, status: "Aktif" }),
+                    dataType: 'json',
+                    complete: function () {
+                        $btn.prop('disabled', false).html('<i class="fas fa-save me-1"></i> Simpan Alternatif');
+                        var sup = activeSuppliers.find(function (s) { return s.id === editId; });
+                        if (sup) {
+                            sup.nama = nama;
+                        }
+                        closeSupplierModal();
+                        renderTableSupplier();
+                        renderMatriksPenilaian();
+                        simpanDrafKeputusan(true);
+                        if (window.AdminToast) AdminToast.success('Data kandidat alternatif berhasil diperbarui.');
+                    }
+                });
+            } else {
+                $btn.prop('disabled', false).html('<i class="fas fa-save me-1"></i> Simpan Alternatif');
+                var sup = activeSuppliers.find(function (s) { return s.id === editId; });
+                if (sup) {
+                    sup.nama = nama;
+                }
+                closeSupplierModal();
+                renderTableSupplier();
+                renderMatriksPenilaian();
+                simpanDrafKeputusan(true);
+            }
+        } else {
+            // Tambah supplier baru ke database
+            $.ajax({
+                url: API_BASE_URL + '/suppliers',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    namaSupplier: nama,
+                    status: "Aktif"
+                }),
+                dataType: 'json',
+                success: function (res) {
+                    $btn.prop('disabled', false).html('<i class="fas fa-save me-1"></i> Simpan Alternatif');
+                    var newSup = res.data || {};
+                    activeSuppliers.push({
+                        id: newSup.id || ('temp_' + Math.random().toString(36).substring(2, 9)),
+                        kode: newSup.kodeSupplier || ('SPL-' + (activeSuppliers.length + 1).toString().padStart(3, '0')),
+                        nama: newSup.namaSupplier || nama
+                    });
+
+                    closeSupplierModal();
+                    renderTableSupplier();
+                    renderMatriksPenilaian();
+
+                    // Simpan ke KeputusanDetails di DB
+                    simpanDrafKeputusan(true);
+
+                    if (window.AdminToast) AdminToast.success('Kandidat alternatif ' + nama + ' berhasil didaftarkan dan tersimpan.');
+                },
+                error: function (xhr) {
+                    $btn.prop('disabled', false).html('<i class="fas fa-save me-1"></i> Simpan Alternatif');
+                    var errMsg = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : 'Gagal menyimpan kandidat alternatif.';
+                    $('#mErrNamaSupplier').text(errMsg);
+                }
+            });
+        }
+    }
+
+    function deleteSupplier(id) {
+        if (!confirm('Hapus kandidat alternatif ini dari daftar evaluasi?')) return;
+        activeSuppliers = activeSuppliers.filter(function (s) { return s.id !== id; });
+        renderTableSupplier();
+        renderMatriksPenilaian();
+        simpanDrafKeputusan(true);
+        if (window.AdminToast) AdminToast.info('Kandidat alternatif berhasil dihapus.');
+    }
+
+    function renderTableSupplier() {
+        $('#labelCountSupplier').text(activeSuppliers.length);
+
+        if (activeSuppliers.length === 0) {
+            $('#emptySupplierWrap').show();
+            $('#wrapTableSupplier').hide();
+            return;
+        }
+
+        $('#emptySupplierWrap').hide();
+        $('#wrapTableSupplier').show();
+
+        var html = '';
+        for (var i = 0; i < activeSuppliers.length; i++) {
+            var s = activeSuppliers[i];
+            html += '<tr>' +
+                '<td class="tc" style="color:#0f172a; font-weight:600; font-size:13px;">' + (i + 1) + '</td>' +
+                '<td><strong style="color:#0f172a; font-size:13px;">' + esc(s.kode) + '</strong></td>' +
+                '<td class="prog-name"><strong style="color:#0f172a; font-size:13px;">' + esc(s.nama) + '</strong></td>' +
+                '<td class="tc">' +
+                    '<div style="display:flex; gap:4px; justify-content:center; align-items:center;">' +
+                        '<button type="button" class="btn-edit-row" onclick="openEditSupplierModal(\'' + s.id + '\')" title="Edit Kandidat"><i class="fas fa-pen"></i></button>' +
+                        '<button type="button" class="btn-del" onclick="deleteSupplier(\'' + s.id + '\')" title="Hapus Kandidat"><i class="fas fa-trash-alt"></i></button>' +
+                    '</div>' +
+                '</td>' +
+            '</tr>';
+        }
+        $('#tbodySupplier').html(html);
+    }
+
+    // ================================================================
+    // 5. LEMBAR PENILAIAN MATRIKS
+    // ================================================================
+    function renderMatriksPenilaian() {
+        $('.cell-input-nilai').each(function () {
+            var k = $(this).data('key');
+            cellValues[k] = $(this).val();
+        });
+
+        if (!currentAspekId || activeParameters.length === 0) {
+            $('#tableHeadMatriks').html('<th class="tc" style="width:40px;">NO</th><th style="min-width:210px; text-align:left;">NAMA KANDIDAT ALTERNATIF</th><th class="tc">PARAMETER KRITERIA EVALUASI</th>');
+            $('#tbodyMatriksPenilaian').html('<tr><td colspan="3" class="tc py-4 text-muted"><i class="fas fa-layer-group text-teal me-1"></i> Silakan pilih aspek penilaian terlebih dahulu pada panel di atas untuk menampilkan kolom kriteria.</td></tr>');
+            return;
+        }
+
+        // 1. Header Kolom
+        var headHtml = '<th class="tc" style="width:40px;">NO</th>';
+        headHtml += '<th style="min-width:210px; text-align:left;">NAMA KANDIDAT ALTERNATIF</th>';
+
+        for (var p = 0; p < activeParameters.length; p++) {
+            var param = activeParameters[p];
+            var sifatBadge = param.sifat === 'Cost'
+                ? '<span class="pill-cost"><i class="fas fa-arrow-down"></i> Cost</span>'
+                : '<span class="pill-benefit"><i class="fas fa-arrow-up"></i> Benefit</span>';
+
+            headHtml += '<th style="min-width:140px;" class="tc">' +
+                '<div class="fw-bold text-dark text-truncate" title="' + esc(param.nama) + '" style="font-size:12px;">' + esc(param.nama) + '</div>' +
+                '<div class="d-flex justify-content-center align-items-center gap-1 mt-1">' +
+                    '<small class="text-muted">' + (param.satuan ? esc(param.satuan) + ' • ' : '') + '</small>' +
+                    sifatBadge +
+                '</div>' +
+            '</th>';
+        }
+        $('#tableHeadMatriks').html(headHtml);
+
+        // 2. Baris Rekanan
+        if (activeSuppliers.length === 0) {
+            $('#tbodyMatriksPenilaian').html('<tr><td colspan="' + (activeParameters.length + 2) + '" class="tc py-4 text-muted">Tambahkan kandidat alternatif pada panel di atas terlebih dahulu.</td></tr>');
+            return;
+        }
+
+        var bodyHtml = '';
+        for (var s = 0; s < activeSuppliers.length; s++) {
+            var sup = activeSuppliers[s];
+            bodyHtml += '<tr>';
+            bodyHtml += '<td class="tc" style="color:#0f172a; font-weight:600; font-size:13px;">' + (s + 1) + '</td>';
+            bodyHtml += '<td class="prog-name">' +
+                '<strong style="color:#0f172a; font-size:13px;">' + esc(sup.nama) + '</strong>' +
+            '</td>';
+
+            for (var p = 0; p < activeParameters.length; p++) {
+                var pId = activeParameters[p].id;
+                var key = sup.id + '_' + pId;
+                var val = cellValues[key] !== undefined ? cellValues[key] : '';
+
+                bodyHtml += '<td style="padding: 6px 8px;">' +
+                    '<input type="number" step="any" class="form-control form-control-sm text-end font-monospace cell-input-nilai" ' +
+                    'data-key="' + key + '" data-sup="' + sup.id + '" data-param="' + pId + '" ' +
+                    'value="' + val + '" placeholder="0" />' +
+                '</td>';
+            }
+            bodyHtml += '</tr>';
+        }
+        $('#tbodyMatriksPenilaian').html(bodyHtml);
+    }
+
+    // ================================================================
+    // 6. PERHITUNGAN PRIORITAS ALTERNATIF
+    // ================================================================
+    function hitungKeputusan() {
+        $('#prosesMsg').hide();
+
+        if (!currentParent || !currentParent.nama) {
+            alert('Data kegiatan evaluasi keputusan belum ditentukan.');
+            return;
+        }
+
+        if (!currentAspekId) {
+            showProsesMsg('Silakan pilih aspek penilaian terlebih dahulu pada panel Pengaturan Aspek & Bobot Kriteria.', true);
+            return;
+        }
+
+        if (activeSuppliers.length < 2) {
+            showProsesMsg('Tambahkan minimal 2 kandidat alternatif untuk dibandingkan prioritasnya.', true);
+            return;
+        }
+
+        if (activeParameters.length < 1) {
+            showProsesMsg('Aspek kriteria evaluasi belum memiliki parameter penilaian.', true);
+            return;
+        }
+
+        var hasEmpty = false;
+        $('.cell-input-nilai').each(function () {
+            var k = $(this).data('key');
+            var val = $(this).val();
+            cellValues[k] = val;
+            if (val === '' || isNaN(parseFloat(val))) {
+                hasEmpty = true;
+                return false;
+            }
+        });
+
+        if (hasEmpty) {
+            showProsesMsg('Seluruh nilai pada lembar matriks evaluasi wajib diisi angka riil.', true);
+            return;
+        }
+
+        var totalBobot = 0;
+        for (var i = 0; i < activeParameters.length; i++) {
+            totalBobot += (activeParameters[i].bobot || 0);
+        }
+        totalBobot = Math.round(totalBobot * 10) / 10;
+        if (Math.abs(totalBobot - 100) > 0.01) {
+            showProsesMsg('Total akumulasi bobot prioritas kriteria harus tepat 100% (saat ini: ' + totalBobot + '%).', true);
+            return;
+        }
+
+        var directWeights = {};
+        for (var i = 0; i < activeParameters.length; i++) {
+            var p = activeParameters[i];
+            directWeights[p.id] = p.bobot;
+        }
+
+        var hasTempSupplier = activeSuppliers.some(function (s) {
+            return !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(s.id);
+        });
+
+        $('#btnHitung').prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i> Menghitung Rekomendasi...');
+
+        if (hasTempSupplier) {
+            simpanDrafSebelumHitung(function () {
+                eksekusiPerhitungan(directWeights);
+            });
+        } else {
+            eksekusiPerhitungan(directWeights);
+        }
+    }
+
+    function showProsesMsg(msg, isError) {
+        var $el = $('#prosesMsg');
+        $el.text(msg).attr('class', isError ? 'msg-error' : 'msg-info').show();
+        $('html, body').animate({ scrollTop: $('#cardLembarPenilaian').offset().top - 20 }, 'smooth');
+    }
+
+    function simpanDrafSebelumHitung(callback) {
+        var nama = currentParent.nama;
+        var tgl = currentParent.tanggal;
+        var catatan = currentParent.catatan;
+
+        var details = activeSuppliers.map(function (sup) {
+            var isGuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(sup.id);
+            return {
+                supplierId: isGuid ? sup.id : null,
+                namaSupplier: sup.nama,
+                statusRekomendasi: "Draft",
+                nilais: activeParameters.map(function (p) {
+                    var rawVal = cellValues[sup.id + '_' + p.id];
+                    return {
+                        parameterId: p.id,
+                        nilaiRiil: parseFloat(rawVal) || 0
+                    };
+                })
+            };
+        });
+
+        $.ajax({
+            url: API_BASE_URL + '/keputusans',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                id: currentSessionId || null,
+                namaKeputusan: nama,
+                tanggalKeputusan: tgl ? new Date(tgl) : new Date(),
+                aspekId: currentAspekId,
+                keterangan: catatan || null,
+                status: "Draft",
+                details: details
+            }),
+            dataType: 'json',
+            success: function (res) {
+                currentSessionId = res.id;
+                currentSessionKode = res.kode;
+                $('#dispKodePengadaan').text(res.kode || 'KPTS-DRAFT');
+                window.history.replaceState({ id: res.id }, '', window.location.pathname + '?id=' + res.id);
+
+                $.ajax({
+                    url: API_BASE_URL + '/keputusans/' + res.id,
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function (freshData) {
+                        if (freshData && freshData.details) {
+                            activeSuppliers = freshData.details.map(function (d) {
+                                return {
+                                    id: d.supplierId,
+                                    kode: d.kodeSupplier,
+                                    nama: d.namaSupplier
+                                };
+                            });
+
+                            cellValues = {};
+                            freshData.details.forEach(function (d) {
+                                if (d.nilais) {
+                                    d.nilais.forEach(function (n) {
+                                        cellValues[d.supplierId + '_' + n.parameterId] = n.nilaiRiil;
+                                    });
+                                }
+                            });
+                        }
+                        if (typeof callback === 'function') callback();
+                    }
+                });
+            },
+            error: function () {
+                $('#btnHitung').prop('disabled', false).html('<i class="fas fa-calculator me-1.5"></i> Hitung Rekomendasi Prioritas');
+                showProsesMsg('Gagal menyinkronkan data kandidat alternatif ke database.', true);
+            }
+        });
+    }
+
+    function eksekusiPerhitungan(directWeights) {
+        var nilaiInputs = [];
+        for (var s = 0; s < activeSuppliers.length; s++) {
+            var sup = activeSuppliers[s];
+            for (var p = 0; p < activeParameters.length; p++) {
+                var pId = activeParameters[p].id;
+                var val = parseFloat(cellValues[sup.id + '_' + pId]) || 0;
+                nilaiInputs.push({
+                    supplierId: sup.id,
+                    parameterId: pId,
+                    nilaiRiil: val
+                });
+            }
+        }
+
+        var payload = {
+            namaKeputusan: currentParent.nama,
+            supplierIds: activeSuppliers.map(function (s) { return s.id; }),
+            parameterIds: activeParameters.map(function (p) { return p.id; }),
+            nilaiInputs: nilaiInputs,
+            directWeights: directWeights
+        };
+
+        $.ajax({
+            url: API_BASE_URL + '/keputusans/calculate',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(payload),
+            dataType: 'json',
+            success: function (res) {
+                $('#btnHitung').prop('disabled', false).html('<i class="fas fa-calculator me-1.5"></i> Hitung Rekomendasi Prioritas');
+
+                if (res && res.data) {
+                    lastCalcResult = res.data;
+                    tampilkanHasil(res.data);
+                }
+            },
+            error: function (xhr) {
+                $('#btnHitung').prop('disabled', false).html('<i class="fas fa-calculator me-1.5"></i> Hitung Rekomendasi Prioritas');
+                var msg = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'Gagal melakukan perhitungan.';
+                showProsesMsg(msg, true);
+            }
+        });
+    }
+
+    // ================================================================
+    // 7. TAMPILKAN HASIL & PERANGKINGAN
+    // ================================================================
+    function tampilkanHasil(data) {
+        var rankings = data.rankings || [];
+        if (rankings.length === 0) return;
+
+        var winner = rankings[0];
+        $('#resWinnerName').text(winner.namaSupplier).attr('title', winner.namaSupplier);
+        $('#resWinnerScore').text(Number(winner.skorAkhir).toFixed(4));
+        $('#resWinnerScorePct').text('(' + (Number(winner.skorAkhir) * 100).toFixed(2) + '%)');
+        $('#resTotalRekanan').text(rankings.length);
+
+        var asp = allAspeks.find(function (a) { return a.id === currentAspekId; });
+        var aspName = asp ? asp.namaAspek : '-';
+        $('#resAspekName').text(aspName).attr('title', aspName);
+        $('#resCountKriteria').text(activeParameters.length + ' Parameter Evaluasi');
+
+        // Tabel Rekapitulasi Peringkat
+        var rankHtml = '';
+        for (var i = 0; i < rankings.length; i++) {
+            var r = rankings[i];
+            var rankBadge = (r.peringkat === 1)
+                ? '<span class="badge bg-warning text-dark px-2.5 py-1 fs-6">1</span>'
+                : (r.peringkat === 2
+                    ? '<span class="badge bg-secondary text-white px-2.5 py-1">2</span>'
+                    : '<span class="badge bg-light text-dark border px-2.5 py-1">' + r.peringkat + '</span>');
+
+            var statusBadge = (r.peringkat === 1)
+                ? '<span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 fw-bold"><i class="fas fa-check-circle me-1"></i> Pilihan Utama</span>'
+                : (r.peringkat === 2
+                    ? '<span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1 fw-bold">Alternatif Cadangan</span>'
+                    : '<span class="badge bg-light text-muted border px-2 py-1">' + esc(r.statusRekomendasi) + '</span>');
+
+            rankHtml += '<tr>' +
+                '<td class="tc">' + rankBadge + '</td>' +
+                '<td><strong style="color:#0f172a; font-size:13px;">' + esc(r.kodeSupplier) + '</strong></td>' +
+                '<td><strong style="color:#0f172a; font-size:13px;">' + esc(r.namaSupplier) + '</strong></td>' +
+                '<td class="tc font-monospace result-col" style="font-size:13.5px;">' + Number(r.skorAkhir).toFixed(4) + '</td>' +
+                '<td class="tc">' + statusBadge + '</td>' +
+            '</tr>';
+        }
+        $('#tableRankingBody').html(rankHtml);
+
+        // Tabel Rincian Nilai Parameter
+        renderDetailParamResult(data);
+
+        $('#cardHasil').fadeIn(300);
+
+        $('html, body').animate({
+            scrollTop: $('#cardHasil').offset().top - 30
+        }, 500);
+
+        if (window.AdminToast) AdminToast.success('Perhitungan selesai! Rekomendasi prioritas telah dihasilkan.');
+    }
+
+    function renderDetailParamResult(data) {
+        var rankings = data.rankings || [];
+        var paramWeights = data.parameterWeights || [];
+
+        var thead = '<tr>';
+        thead += '<th style="width:75px;" class="tc">RANK</th>';
+        thead += '<th style="min-width:180px; text-align:left;">NAMA KANDIDAT ALTERNATIF</th>';
+
+        for (var p = 0; p < activeParameters.length; p++) {
+            var param = activeParameters[p];
+            var pw = paramWeights.find(function (w) { return w.parameterId === param.id; });
+            var persenBobot = pw ? pw.persentase : param.bobot;
+            var sifatBadge = param.sifat === 'Cost'
+                ? '<span class="pill-cost"><i class="fas fa-arrow-down"></i> Cost</span>'
+                : '<span class="pill-benefit"><i class="fas fa-arrow-up"></i> Benefit</span>';
+
+            thead += '<th style="min-width:140px;" class="tc">' +
+                '<div class="fw-bold text-dark text-truncate" title="' + esc(param.nama) + '" style="font-size:11.5px;">' + esc(param.nama) + '</div>' +
+                '<div class="d-flex justify-content-center align-items-center gap-1 mt-0.5">' +
+                    '<small class="text-muted">' + (param.satuan ? esc(param.satuan) + ' • ' : '') + '</small>' +
+                    sifatBadge +
+                '</div>' +
+                '<div class="mt-1 badge bg-light text-teal border border-teal-subtle" style="font-size:9.5px;">Bobot: ' + persenBobot + '%</div>' +
+            '</th>';
+        }
+
+        thead += '<th style="width:105px;" class="tc result-col">SKOR AKHIR</th>';
+        thead += '</tr>';
+        $('#tableDetailHead').html(thead);
+
+        var tbody = '';
+        for (var i = 0; i < rankings.length; i++) {
+            var r = rankings[i];
+            var isPemenang = (r.peringkat === 1);
+
+            tbody += '<tr style="' + (isPemenang ? 'background:rgba(240, 253, 250, 0.6);' : '') + '">';
+            tbody += '<td class="tc">' +
+                (isPemenang
+                    ? '<span class="badge bg-success-subtle text-success border border-success-subtle fw-bold px-2.5 py-1">1</span>'
+                    : '<span class="badge bg-light text-dark border px-2.5 py-1">' + r.peringkat + '</span>') +
+            '</td>';
+            tbody += '<td class="prog-name">' +
+                '<strong style="color:#0f172a;">' + esc(r.namaSupplier) + '</strong>' +
+            '</td>';
+
+            for (var p = 0; p < activeParameters.length; p++) {
+                var pId = activeParameters[p].id;
+                var param = activeParameters[p];
+
+                var rawVal = (r.realValues && r.realValues[pId] !== undefined)
+                    ? Number(r.realValues[pId])
+                    : (cellValues[r.supplierId + '_' + pId] ? Number(cellValues[r.supplierId + '_' + pId]) : 0);
+
+                var normScore = (r.normalizedScores && r.normalizedScores[pId] !== undefined)
+                    ? Number(r.normalizedScores[pId])
+                    : 0;
+
+                var normPersen = (normScore * 100).toFixed(1);
+                var kontribusi = (normScore * (param.bobot || 0)).toFixed(2);
+
+                tbody += '<td class="p-1.5 text-center">' +
+                    '<div class="font-monospace fw-bold text-dark" style="font-size:11.5px;">' +
+                        rawVal.toLocaleString('id-ID') + (param.satuan ? ' <small class="text-muted fw-normal">' + esc(param.satuan) + '</small>' : '') +
+                    '</div>' +
+                    '<div class="d-flex justify-content-center align-items-center gap-1 mt-1">' +
+                        '<span class="badge" style="background:#e0f2fe; color:#0369a1; font-size:9.5px; font-weight:600;" title="Nilai Normalisasi">' +
+                            normPersen + '%' +
+                        '</span>' +
+                        '<span class="badge" style="background:#dcfce7; color:#15803d; font-size:9.5px; font-weight:600;" title="Poin Kontribusi Terbobot">' +
+                            '+' + kontribusi + '% pts' +
+                        '</span>' +
+                    '</div>' +
+                '</td>';
+            }
+
+            var skorPersen = (Number(r.skorAkhir) * 100).toFixed(2);
+            tbody += '<td class="tc font-monospace fw-bold result-col" style="font-size:13.5px;">' +
+                Number(r.skorAkhir).toFixed(4) +
+                '<div style="font-size:10px; color:#059669;">(' + skorPersen + '%)</div>' +
+            '</td>';
+            tbody += '</tr>';
+        }
+
+        $('#tableDetailBody').html(tbody);
+    }
+
+    function kembaliKePenilaian() {
+        $('html, body').animate({
+            scrollTop: $('#cardLembarPenilaian').offset().top - 20
+        }, 400);
+    }
+
+    // ================================================================
+    // 8. SIMPAN DRAF & SIMPAN HASIL FINAL KE RIWAYAT
+    // ================================================================
+    function simpanDrafKeputusan(silent, callback) {
+        if (!currentParent) {
+            if (callback) callback();
+            return;
+        }
+        var nama = currentParent.nama;
+        var tgl = currentParent.tanggal;
+        var catatan = currentParent.catatan;
+
+        $('.cell-input-nilai').each(function () {
+            var k = $(this).data('key');
+            var val = $(this).val();
+            if (val !== undefined && val !== '') {
+                cellValues[k] = val;
+            }
+        });
+
+        var details = activeSuppliers.map(function (sup) {
+            var isGuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(sup.id);
+            return {
+                supplierId: isGuid ? sup.id : null,
+                namaSupplier: sup.nama,
+                statusRekomendasi: "Draft",
+                nilais: activeParameters.map(function (p) {
+                    var rawVal = cellValues[sup.id + '_' + p.id];
+                    var parsed = parseFloat(rawVal);
+                    return {
+                        parameterId: p.id,
+                        nilaiRiil: isNaN(parsed) ? 0 : parsed
+                    };
+                })
+            };
+        });
+
+        $.ajax({
+            url: API_BASE_URL + '/keputusans',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                id: currentSessionId || null,
+                kodeKeputusan: currentSessionKode || null,
+                namaKeputusan: nama,
+                tanggalKeputusan: tgl ? new Date(tgl) : new Date(),
+                aspekId: currentAspekId,
+                keterangan: catatan || null,
+                status: "Draft",
+                details: details
+            }),
+            dataType: 'json',
+            success: function (res) {
+                currentSessionId = res.id;
+                currentSessionKode = res.kode;
+                $('#dispKodePengadaan').text(res.kode || 'KPTS-DRAFT');
+                localStorage.setItem('activePengadaanId', res.id);
+                window.history.replaceState({ id: res.id }, '', window.location.pathname + '?id=' + res.id);
+
+                // Update item di allDraftKeputusans
+                var draftItem = allDraftKeputusans.find(function (d) { return d.id === res.id; });
+                if (draftItem) {
+                    draftItem.jumlahSupplier = activeSuppliers.length;
+                    draftItem.namaKeputusan = nama;
+                    var asp = allAspeks.find(function (a) { return a.id === currentAspekId; });
+                    if (asp) draftItem.namaAspek = asp.namaAspek;
+                    renderDaftarDraftPengadaan();
+                }
+
+                if (!silent) {
+                    if (window.AdminToast) AdminToast.success('Draf evaluasi keputusan berhasil disimpan ke database.');
+                    else Swal.fire('Tersimpan', 'Draf evaluasi keputusan berhasil disimpan.', 'success');
+                }
+                if (callback) callback(null, res);
+            },
+            error: function (xhr) {
+                if (!silent) {
+                    Swal.fire('Gagal', 'Gagal menyimpan draf.', 'error');
+                }
+                if (callback) callback(xhr);
+            }
+        });
+    }
+
+    var autoSaveCellTimer = null;
+    $(document).on('input change', '.cell-input-nilai', function () {
+        var k = $(this).data('key');
+        var val = $(this).val();
+        cellValues[k] = val;
+
+        clearTimeout(autoSaveCellTimer);
+        autoSaveCellTimer = setTimeout(function () {
+            simpanDrafKeputusan(true);
+        }, 800);
+    });
+
+    function simpanHasilKeHistory() {
+        if (!lastCalcResult || !lastCalcResult.rankings || lastCalcResult.rankings.length === 0) {
+            Swal.fire('Peringatan', 'Lakukan perhitungan terlebih dahulu.', 'warning');
+            return;
+        }
+
+        var nama = currentParent.nama;
+        var tgl = currentParent.tanggal;
+        var catatan = currentParent.catatan;
+        var winner = lastCalcResult.rankings[0];
+
+        var details = [];
+        for (var i = 0; i < lastCalcResult.rankings.length; i++) {
+            var r = lastCalcResult.rankings[i];
+            var nilaiList = [];
+
+            for (var p = 0; p < activeParameters.length; p++) {
+                var pId = activeParameters[p].id;
+                var rawVal = (r.realValues && r.realValues[pId] !== undefined) ? r.realValues[pId] : 0;
+                nilaiList.push({
+                    parameterId: pId,
+                    nilaiRiil: rawVal
+                });
+            }
+
+            details.push({
+                supplierId: r.supplierId,
+                skorAkhir: r.skorAkhir,
+                peringkat: r.peringkat,
+                statusRekomendasi: r.statusRekomendasi,
+                catatanEvaluasi: (r.peringkat === 1 ? lastCalcResult.winnerHighlight : null),
+                nilais: nilaiList
+            });
+        }
+
+        var payload = {
+            id: currentSessionId || null,
+            kodeKeputusan: currentSessionKode || null,
+            namaKeputusan: nama,
+            tanggalKeputusan: tgl ? new Date(tgl) : new Date(),
+            aspekId: currentAspekId,
+            keterangan: catatan || null,
+            supplierPemenangId: winner.supplierId,
+            skorTertinggi: winner.skorAkhir,
+            status: "Selesai",
+            details: details
+        };
+
+        var $btn = $('#btnSimpanHasil');
+        $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Menyimpan...');
+
+        $.ajax({
+            url: API_BASE_URL + '/keputusans',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(payload),
+            dataType: 'json',
+            success: function (res) {
+                $btn.prop('disabled', false).html('<i class="fas fa-check-circle"></i> Simpan ke Riwayat');
+                currentSessionId = res.id;
+                currentSessionKode = res.kode;
+                $('#dispKodePengadaan').text(res.kode || 'SELESAI');
+                localStorage.removeItem('activePengadaanId');
+
+                // Hapus dari list draf karena statusnya sudah Selesai (masuk Riwayat)
+                allDraftKeputusans = allDraftKeputusans.filter(function (d) { return d.id !== res.id; });
+                renderDaftarDraftPengadaan();
+
+                Swal.fire({
+                    title: 'Evaluasi Keputusan Selesai!',
+                    text: 'Hasil evaluasi keputusan penentuan prioritas alternatif ' + (res.kode || '') + ' telah tersimpan permanen ke Riwayat Evaluasi Keputusan.',
+                    icon: 'success',
+                    showCancelButton: true,
+                    confirmButtonColor: '#0f766e',
+                    confirmButtonText: 'Buka Riwayat',
+                    cancelButtonText: 'Tetap di Sini'
+                }).then(function (result) {
+                    if (result.isConfirmed) {
+                        window.location.href = '/Riwayat/Index';
+                    }
+                });
+            },
+            error: function (xhr) {
+                $btn.prop('disabled', false).html('<i class="fas fa-check-circle"></i> Simpan ke Riwayat');
+                var msg = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'Gagal menyimpan hasil evaluasi keputusan.';
+                Swal.fire('Gagal', msg, 'error');
+            }
+        });
+    }
+
+    // ================================================================
+    // 9. HAPUS KEGIATAN EVALUASI & RESET
+    // ================================================================
+    function hapusDraftPengadaan(id, nama) {
+        if (!id) return;
+        var displayName = nama || 'ini';
+        if (!confirm('Yakin ingin menghapus draf evaluasi keputusan "' + displayName + '"?\nData kandidat alternatif dan matriks penilaian untuk evaluasi ini akan dihapus secara permanen dari database.')) {
+            return;
+        }
+
+        $.ajax({
+            url: API_BASE_URL + '/keputusans/' + id,
+            type: 'DELETE',
+            success: function () {
+                allDraftKeputusans = allDraftKeputusans.filter(function (d) { return d.id !== id; });
+
+                if (currentSessionId === id) {
+                    if (allDraftKeputusans.length > 0) {
+                        var nextDraft = allDraftKeputusans[0];
+                        loadSessionById(nextDraft.id);
+                        if (window.AdminToast) {
+                            AdminToast.success('Draf evaluasi keputusan "' + displayName + '" berhasil dihapus. Beralih ke evaluasi "' + nextDraft.namaKeputusan + '".');
+                        }
+                    } else {
+                        resetWorkspacePengadaan('Draf evaluasi keputusan "' + displayName + '" berhasil dihapus.');
+                    }
+                } else {
+                    renderDaftarDraftPengadaan();
+                    if (window.AdminToast) {
+                        AdminToast.success('Draf evaluasi keputusan "' + displayName + '" berhasil dihapus.');
+                    }
+                }
+            },
+            error: function () {
+                alert('Gagal menghapus evaluasi keputusan dari database.');
+            }
+        });
+    }
+
+    function hapusPengadaanAktif() {
+        if (!currentSessionId) return;
+        var nama = currentParent ? currentParent.nama : 'ini';
+        hapusDraftPengadaan(currentSessionId, nama);
+    }
+
+    function resetWorkspacePengadaan(msg) {
+        currentSessionId = null;
+        currentSessionKode = null;
+        currentSessionStatus = "Draft";
+        currentParent = null;
+        activeSuppliers = [];
+        cellValues = {};
+        lastCalcResult = null;
+
+        localStorage.removeItem('activePengadaanId');
+        window.history.replaceState({}, '', window.location.pathname);
+
+        $('#cardHasil').hide();
+        $('#prosesMsg').hide();
+        $('#workspacePengadaan').hide();
+        $('#dividerDaftarPengadaan').hide();
+
+        renderDaftarDraftPengadaan();
+
+        if (allDraftKeputusans.length === 0) {
+            $('#emptyStateNoPengadaan').fadeIn(200);
+        }
+
+        if (window.AdminToast && msg) {
+            AdminToast.success(msg);
+        }
+    }
+
+    function buatSesiBaru() {
+        openParentModal(false);
+    }
+
+    function loadSessionById(id) {
+        $.ajax({
+            url: API_BASE_URL + '/keputusans/' + id,
+            type: 'GET',
+            dataType: 'json',
+            success: function (data) {
+                if (!data) return;
+
+                currentSessionId = data.id;
+                currentSessionKode = data.kodeKeputusan;
+                currentSessionStatus = data.status;
+
+                localStorage.setItem('activePengadaanId', data.id);
+                window.history.replaceState({ id: data.id }, '', window.location.pathname + '?id=' + data.id);
+
+                renderDaftarDraftPengadaan();
+
+                currentParent = {
+                    nama: data.namaKeputusan || '',
+                    tanggal: data.tanggalKeputusan ? data.tanggalKeputusan.split('T')[0] : '',
+                    aspekId: data.aspekId,
+                    catatan: data.keterangan || ''
+                };
+
+                currentAspekId = data.aspekId || null;
+
+                // Tampilkan info parent aktif
+                $('#dispNamaPengadaan').text(currentParent.nama);
+                $('#dispKodePengadaan').text(data.kodeKeputusan || 'KPTS-DRAFT');
+                $('#dispTanggalPengadaan').text(currentParent.tanggal ? new Date(currentParent.tanggal).toLocaleDateString('id-ID') : '-');
+
+                updateDispAspek();
+
+                $('#dispCatatanPengadaan').text(currentParent.catatan || '-');
+
+                $('#emptyStateNoPengadaan').hide();
+                $('#workspacePengadaan').show();
+                if (allDraftKeputusans.length > 0) {
+                    $('#dividerDaftarPengadaan').show();
+                } else {
+                    $('#dividerDaftarPengadaan').hide();
+                }
+                renderWorkspaceAspekSelect();
+                updateActiveParameters();
+
+                activeSuppliers = [];
+                cellValues = {};
+
+                if (data.details && data.details.length > 0) {
+                    for (var i = 0; i < data.details.length; i++) {
+                        var d = data.details[i];
+                        activeSuppliers.push({
+                            id: d.supplierId,
+                            kode: d.kodeSupplier || ('SPL-' + (i + 1).toString().padStart(3, '0')),
+                            nama: d.namaSupplier
+                        });
+
+                        if (d.nilais && d.nilais.length > 0) {
+                            for (var j = 0; j < d.nilais.length; j++) {
+                                var n = d.nilais[j];
+                                cellValues[d.supplierId + '_' + n.parameterId] = n.nilaiRiil;
+                            }
+                        }
+                    }
+                }
+
+                renderTableSupplier();
+                renderMatriksPenilaian();
+
+                var hasScores = data.details && data.details.some(function (d) { return d.skorAkhir !== null && d.skorAkhir !== undefined && d.skorAkhir > 0; });
+                if (hasScores) {
+                    var calculatedRankings = data.details.map(function (d) {
+                        var realVals = {};
+                        if (d.nilais) {
+                            d.nilais.forEach(function (n) { realVals[n.parameterId] = n.nilaiRiil; });
+                        }
+                        return {
+                            peringkat: d.peringkat || 1,
+                            supplierId: d.supplierId,
+                            kodeSupplier: d.kodeSupplier,
+                            namaSupplier: d.namaSupplier,
+                            skorAkhir: d.skorAkhir,
+                            statusRekomendasi: d.statusRekomendasi || 'Pilihan',
+                            realValues: realVals,
+                            normalizedScores: {}
+                        };
+                    });
+
+                    lastCalcResult = {
+                        rankings: calculatedRankings,
+                        parameterWeights: activeParameters.map(function (p) {
+                            return {
+                                parameterId: p.id,
+                                kodeParameter: p.kode,
+                                namaParameter: p.nama,
+                                sifatKriteria: p.sifat,
+                                bobot: p.bobot / 100.0,
+                                persentase: p.bobot
+                            };
+                        }),
+                        winnerHighlight: ""
+                    };
+
+                    tampilkanHasil(lastCalcResult);
+                } else {
+                    $('#cardHasil').hide();
+                }
+            },
+            error: function () {
+                localStorage.removeItem('activePengadaanId');
+                window.history.replaceState({}, '', window.location.pathname);
+                resetWorkspacePengadaan();
+            }
+        });
+    }
+</script>
+}

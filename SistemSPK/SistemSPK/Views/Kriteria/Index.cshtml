@@ -1,0 +1,281 @@
+@{
+    ViewData["Title"] = "Aspek Penilaian Evaluasi";
+}
+
+<div class="row">
+    <div class="col-12">
+
+        <!-- Breadcrumb Bar -->
+        <div class="content-breadcrumb-bar mb-2">
+            <div class="breadcrumb-nav" id="pageBreadcrumb">
+                <span class="breadcrumb-current">Aspek Penilaian Evaluasi</span>
+                <span class="breadcrumb-separator">/</span>
+            </div>
+        </div>
+
+
+        <!-- 1. KARTU ASPEK EVALUASI (TINGKAT 1) -->
+        <div class="admin-card mb-4">
+            <div class="admin-card-header py-2.5 px-3 px-md-4">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 w-100">
+                    <div>
+                        <h3 class="admin-card-title">Aspek Penilaian Multi-Kriteria</h3>
+                        <p class="admin-card-desc">Pengelompokan dimensi kriteria evaluasi untuk penentuan prioritas alternatif secara objektif</p>
+                    </div>
+                    <div>
+                        <button type="button" class="btn-primary-admin" onclick="openCreateAspekModal()">
+                            <i class="fas fa-plus me-1"></i> Tambah Aspek Baru
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle w-100" id="tableAspek" style="font-size:12.5px;">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 50px; text-align:center;">URUT</th>
+                            <th style="width: 100px;">KODE</th>
+                            <th>NAMA ASPEK</th>
+                            <th>DESKRIPSI CAKUPAN</th>
+                            <th class="text-center" style="width: 140px;">TOTAL PARAMETER</th>
+                            <th style="text-align: right; width: 170px;">AKSI</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableAspekBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Modal Tambah / Edit Aspek -->
+<div class="admin-modal-backdrop" id="modalAspek">
+    <div class="admin-modal-card" style="max-width: 480px;">
+        <div class="admin-modal-head">
+            <div class="d-flex align-items-center gap-2">
+                <div class="brand-icon-box" style="width:30px; height:30px; font-size:13px; border-radius:6px;">
+                    <i class="fas fa-layer-group text-white"></i>
+                </div>
+                <h4 class="admin-modal-title" id="modalAspekTitle">Tambah Aspek Baru</h4>
+            </div>
+            <button type="button" class="btn-modal-close" onclick="AdminModal.close('modalAspek')">&times;</button>
+        </div>
+        <form id="formAspek" onsubmit="event.preventDefault(); submitAspek();">
+            <input type="hidden" id="aspekId" />
+            <div class="admin-modal-content">
+                <div class="row g-3">
+                    <div class="col-8">
+                        <div class="form-field-group mb-0">
+                            <label class="form-field-label">Kode Aspek</label>
+                            <input type="text" id="aspekKode" class="form-field-input" placeholder="Contoh: ASP-01 (otomatis jika kosong)" />
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="form-field-group mb-0">
+                            <label class="form-field-label">Urutan</label>
+                            <input type="number" id="aspekUrutan" class="form-field-input" min="1" value="1" required />
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="form-field-group mb-0">
+                            <label class="form-field-label">Nama Aspek Evaluasi <span style="color:#ef4444;">*</span></label>
+                            <input type="text" id="aspekNama" class="form-field-input" placeholder="Contoh: Komersial & Finansial" required />
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="form-field-group mb-0">
+                            <label class="form-field-label">Deskripsi Cakupan</label>
+                            <textarea id="aspekDeskripsi" class="form-field-textarea" rows="3" placeholder="Jelaskan ruang lingkup aspek evaluasi ini..."></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="admin-modal-foot">
+                <button type="button" class="btn-secondary-admin" onclick="AdminModal.close('modalAspek')">Batal</button>
+                <button type="submit" class="btn-primary-admin" id="btnSaveAspek">
+                    <i class="fas fa-save me-1"></i> Simpan Aspek
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    var dtAspek = null;
+    var allAspeks = [];
+
+    $(function () {
+        loadAspekData();
+    });
+
+    // ================= ASPEK =================
+    function loadAspekData() {
+        if (dtAspek) {
+            dtAspek.destroy();
+            dtAspek = null;
+        }
+        $('#tableAspekBody').empty();
+
+        $.ajax({
+            url: API_BASE_URL + '/aspeks',
+            type: 'GET',
+            dataType: 'json',
+            success: function (data) {
+                allAspeks = data || [];
+                var html = '';
+
+                if (allAspeks.length > 0) {
+                    for (var i = 0; i < allAspeks.length; i++) {
+                        var a = allAspeks[i];
+                        var paramCount = a.jumlahParameter || 0;
+
+                        html += '<tr>' +
+                            '<td class="text-center text-muted fw-bold">' + a.urutan + '</td>' +
+                            '<td><span class="code-tag">' + escHtml(a.kodeAspek) + '</span></td>' +
+                            '<td><strong style="color:#0f172a; font-size:13px;">' + escHtml(a.namaAspek) + '</strong></td>' +
+                            '<td><span class="text-muted">' + escHtml(a.deskripsi || '-') + '</span></td>' +
+                            '<td class="text-center">' +
+                                '<span class="badge bg-light text-dark border px-2 py-1">' +
+                                    '<i class="fas fa-list-check me-1 text-teal"></i> ' + paramCount + ' Parameter' +
+                                '</span>' +
+                            '</td>' +
+                            '<td class="text-end text-nowrap">' +
+                                '<div class="table-btn-group justify-content-end align-items-center gap-1">' +
+                                    '<a href="/Kriteria/Parameter?aspekId=' + a.id + '" class="btn btn-sm btn-outline-primary py-1 px-2" style="font-size:11.5px; border-radius:6px; font-weight:600; text-decoration:none;" title="Buka Halaman Parameter Tolok Ukur Aspek ' + escHtml(a.namaAspek) + '">' +
+                                        '<i class="fas fa-sliders me-1"></i> Parameter' +
+                                    '</a>' +
+                                    '<button type="button" class="btn-action-edit" title="Edit Aspek" onclick="openEditAspekModal(' + i + ')"><i class="fas fa-pen"></i></button>' +
+                                    '<button type="button" class="btn-action-delete" title="Hapus Aspek" onclick="confirmDeleteAspek(\'' + a.id + '\', \'' + escHtml(a.namaAspek).replace(/'/g, "\\'") + '\')"><i class="fas fa-trash"></i></button>' +
+                                '</div>' +
+                            '</td>' +
+                            '</tr>';
+                    }
+                    $('#tableAspekBody').html(html);
+                } else {
+                    $('#tableAspekBody').empty();
+                }
+
+                dtAspek = $('#tableAspek').DataTable({
+                    pageLength: 10,
+                    lengthMenu: window.dtLengthMenuConfig,
+                    language: $.extend({}, window.dtLanguageConfig, {
+                        emptyTable: "Belum ada aspek evaluasi. Silakan tambah aspek baru.",
+                        zeroRecords: "Aspek tidak ditemukan"
+                    })
+                });
+            },
+            error: function () {
+                $('#tableAspekBody').empty();
+                dtAspek = $('#tableAspek').DataTable({
+                    pageLength: 10,
+                    lengthMenu: window.dtLengthMenuConfig,
+                    language: $.extend({}, window.dtLanguageConfig, {
+                        emptyTable: "Gagal memuat data aspek evaluasi. Pastikan REST API berjalan.",
+                        zeroRecords: "Data tidak ditemukan"
+                    })
+                });
+            }
+        });
+    }
+
+    function openCreateAspekModal() {
+        $('#aspekId').val('');
+        $('#aspekKode').val('');
+        $('#aspekNama').val('');
+        $('#aspekDeskripsi').val('');
+        $('#aspekUrutan').val((allAspeks.length + 1));
+        $('#modalAspekTitle').text('Tambah Aspek Evaluasi Baru');
+        AdminModal.open('modalAspek');
+    }
+
+    function openEditAspekModal(index) {
+        var a = allAspeks[index];
+        if (!a) return;
+
+        $('#aspekId').val(a.id);
+        $('#aspekKode').val(a.kodeAspek);
+        $('#aspekNama').val(a.namaAspek);
+        $('#aspekDeskripsi').val(a.deskripsi || '');
+        $('#aspekUrutan').val(a.urutan);
+        $('#modalAspekTitle').text('Ubah Aspek Evaluasi');
+        AdminModal.open('modalAspek');
+    }
+
+    function submitAspek() {
+        var id = $('#aspekId').val();
+        var isEdit = !!id;
+
+        var payload = {
+            id: id || undefined,
+            kodeAspek: $('#aspekKode').val().trim() || undefined,
+            namaAspek: $('#aspekNama').val().trim(),
+            deskripsi: $('#aspekDeskripsi').val().trim() || null,
+            urutan: parseInt($('#aspekUrutan').val()) || 1
+        };
+
+        if (!payload.namaAspek) {
+            Swal.fire('Validasi', 'Nama aspek wajib diisi.', 'warning');
+            return;
+        }
+
+        var url = isEdit ? (API_BASE_URL + '/aspeks/' + id) : (API_BASE_URL + '/aspeks');
+        var method = isEdit ? 'PUT' : 'POST';
+
+        $('#btnSaveAspek').prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i> Menyimpan...');
+
+        $.ajax({
+            url: url,
+            type: method,
+            contentType: 'application/json',
+            data: JSON.stringify(payload),
+            dataType: 'json',
+            success: function (res) {
+                $('#btnSaveAspek').prop('disabled', false).html('<i class="fas fa-save me-1"></i> Simpan Aspek');
+                AdminModal.close('modalAspek');
+                AdminToast.success(res.message || 'Aspek berhasil disimpan');
+                loadAspekData();
+            },
+            error: function (xhr) {
+                $('#btnSaveAspek').prop('disabled', false).html('<i class="fas fa-save me-1"></i> Simpan Aspek');
+                var msg = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'Gagal menyimpan aspek.';
+                Swal.fire('Gagal', msg, 'error');
+            }
+        });
+    }
+
+    function confirmDeleteAspek(id, nama) {
+        Swal.fire({
+            title: 'Hapus Aspek Evaluasi?',
+            text: 'Menghapus aspek "' + nama + '" akan turut menghapus seluruh parameter yang bernaung di bawahnya.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: 'Ya, Hapus Semua',
+            cancelButtonText: 'Batal'
+        }).then(function (res) {
+            if (res.isConfirmed) {
+                $.ajax({
+                    url: API_BASE_URL + '/aspeks/' + id,
+                    type: 'DELETE',
+                    dataType: 'json',
+                    success: function (res) {
+                        AdminToast.success(res.message || 'Aspek berhasil dihapus');
+                        loadAspekData();
+                    },
+                    error: function (xhr) {
+                        var msg = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'Gagal menghapus aspek.';
+                        Swal.fire('Gagal', msg, 'error');
+                    }
+                });
+            }
+        });
+    }
+</script>
+}

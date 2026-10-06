@@ -1,0 +1,323 @@
+@{
+    ViewData["Title"] = "Dashboard SPK";
+}
+
+<style>
+    /* Enhanced Table styling for Recent Activities in Dashboard */
+    #tableRecentKegiatan thead th {
+        background-color: #f1f5f9 !important;
+        color: #0f172a !important;
+        font-weight: 700 !important;
+        font-size: 13px !important;
+        letter-spacing: 0.3px !important;
+        padding: 12px 14px !important;
+        border-bottom: 2px solid #cbd5e1 !important;
+        vertical-align: middle !important;
+    }
+    #tableRecentKegiatan tbody td {
+        padding: 11px 14px !important;
+        color: #0f172a !important;
+        font-size: 13.5px !important;
+        border-bottom: 1px solid #e2e8f0 !important;
+        vertical-align: middle !important;
+    }
+    #tableRecentKegiatan tbody tr:hover td {
+        background-color: #f8fafc !important;
+    }
+    .code-tag {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        font-size: 12.5px;
+        font-weight: 700;
+        background: #e2e8f0;
+        color: #0f172a;
+        padding: 3px 8px;
+        border-radius: 5px;
+        border: 1px solid #cbd5e1;
+        display: inline-block;
+        white-space: nowrap !important;
+        text-wrap: nowrap !important;
+        word-break: keep-all !important;
+    }
+    .btn-act {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border-radius: 6px;
+        font-size: 13px;
+        border: 1px solid #cbd5e1;
+        background: #ffffff;
+        color: #334155;
+        transition: all 0.15s ease;
+        text-decoration: none;
+    }
+    .btn-act:hover {
+        background: #f1f5f9;
+        color: #0f172a;
+    }
+    .btn-act-view {
+        color: #0284c7;
+        border-color: #bae6fd;
+        background: #f0f9ff;
+    }
+    .btn-act-view:hover {
+        background: #e0f2fe;
+        color: #0369a1;
+        border-color: #7dd3fc;
+    }
+    .btn-act-primary {
+        color: #0f766e;
+        border-color: #99f6e4;
+        background: #f0fdfa;
+    }
+    .btn-act-primary:hover {
+        background: #ccfbf1;
+        color: #115e59;
+        border-color: #5eead4;
+    }
+</style>
+
+<div class="row">
+    <div class="col-12">
+
+        <!-- Section 1: 3 Stat Cards -->
+        <div class="row g-3 mb-4">
+            <div class="col-12 col-md-4">
+                <div class="stat-card-box">
+                    <div class="stat-header">
+                        <span class="stat-label-text">Aspek Penilaian</span>
+                        <div class="stat-icon-wrapper stat-icon-blue">
+                            <i class="fas fa-layer-group"></i>
+                        </div>
+                    </div>
+                    <div class="stat-number-value" id="statAspekCount">0</div>
+                    <div class="stat-subtext">
+                        <i class="fas fa-sitemap text-primary"></i>
+                        <span>Dimensi aspek evaluasi</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-4">
+                <div class="stat-card-box">
+                    <div class="stat-header">
+                        <span class="stat-label-text">Kriteria Penilaian</span>
+                        <div class="stat-icon-wrapper stat-icon-purple">
+                            <i class="fas fa-sliders"></i>
+                        </div>
+                    </div>
+                    <div class="stat-number-value" id="statParameterCount">0</div>
+                    <div class="stat-subtext">
+                        <i class="fas fa-balance-scale text-info"></i>
+                        <span>Tolok ukur Cost &amp; Benefit</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-4">
+                <div class="stat-card-box">
+                    <div class="stat-header">
+                        <span class="stat-label-text">Evaluasi Keputusan</span>
+                        <div class="stat-icon-wrapper stat-icon-amber">
+                            <i class="fas fa-scale-balanced"></i>
+                        </div>
+                    </div>
+                    <div class="stat-number-value" id="statKeputusanCount">0</div>
+                    <div class="stat-subtext">
+                        <i class="fas fa-check-circle text-success"></i>
+                        <span>Selesai Dievaluasi</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 3: Tables & Process Summary -->
+        <div class="row g-4">
+            <!-- Aktivitas Evaluasi Keputusan Terakhir -->
+            <div class="col-12">
+                <div class="admin-card mb-0">
+                    <div class="admin-card-header py-2.5 px-3 px-md-4">
+                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 w-100">
+                            <div>
+                                <h3 class="admin-card-title">Aktivitas Evaluasi Keputusan Terakhir</h3>
+                                <p class="admin-card-desc">10 kegiatan evaluasi keputusan terbaru atau proses evaluasi aktif</p>
+                            </div>
+                            <div>
+                                <a href="/Keputusan/Index" class="btn-primary-admin py-1.5 px-3 d-inline-flex align-items-center" style="font-size:12px; font-weight:600;" title="Buka ruang kerja evaluasi keputusan">
+                                    <i class="fas fa-plus me-1.5"></i> Buat Evaluasi Baru
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle w-100 mb-0" id="tableRecentKegiatan" style="font-size:12.5px;">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width:45px; text-align:center;">NO</th>
+                                    <th style="width:160px; min-width:160px; white-space:nowrap;" class="text-nowrap">KODE EVALUASI</th>
+                                    <th>NAMA KEGIATAN EVALUASI</th>
+                                    <th style="width:120px;">TANGGAL</th>
+                                    <th>ASPEK EVALUASI</th>
+                                    <th style="width:130px;" class="text-center">KANDIDAT ALTERNATIF</th>
+                                    <th style="width:130px;" class="text-center">STATUS</th>
+                                    <th style="width:80px; text-align:right;">AKSI</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableRecentKegiatanBody">
+                                <tr>
+                                    <td colspan="8" class="text-center py-4 text-muted">
+                                        Memuat aktivitas evaluasi keputusan...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    var dtRecent = null;
+
+    $(function () {
+        loadDashboardData();
+    });
+
+    function escHtml(str) {
+        if (!str) return '';
+        return $('<div>').text(str).html();
+    }
+
+    function loadDashboardData() {
+        $.ajax({
+            url: API_BASE_URL + '/keputusans/dashboard',
+            type: 'GET',
+            dataType: 'json',
+            success: function (data) {
+                if (data) {
+                    $('#statAspekCount').text(data.totalAspek || 0);
+                    $('#statParameterCount').text(data.totalParameter || 0);
+                    $('#statKeputusanCount').text(data.totalKeputusan || 0);
+                }
+                loadRecentKegiatans();
+            },
+            error: function () {
+                loadRecentKegiatans();
+            }
+        });
+    }
+
+    function loadRecentKegiatans() {
+        $.ajax({
+            url: API_BASE_URL + '/keputusans',
+            type: 'GET',
+            dataType: 'json',
+            success: function (res) {
+                var list = res || [];
+                // Urutkan kegiatan terbaru terlebih dahulu (berdasarkan tanggal keputusan / created)
+                list.sort(function (a, b) {
+                    var dateA = new Date(a.createdAt || a.tanggalKeputusan || 0).getTime();
+                    var dateB = new Date(b.createdAt || b.tanggalKeputusan || 0).getTime();
+                    return dateB - dateA;
+                });
+                var recentItems = list.slice(0, 10);
+                renderRecentKegiatans(recentItems);
+            },
+            error: function () {
+                $('#tableRecentKegiatanBody').html('<tr><td colspan="8" class="text-center py-4 text-danger">Gagal memuat aktivitas kegiatan. Pastikan backend aktif.</td></tr>');
+            }
+        });
+    }
+
+    function renderRecentKegiatans(items) {
+        if (dtRecent) {
+            dtRecent.destroy();
+            dtRecent = null;
+        }
+        $('#tableRecentKegiatanBody').empty();
+
+        if (!items || items.length === 0) {
+            dtRecent = $('#tableRecentKegiatan').DataTable({
+                pageLength: 10,
+                lengthMenu: window.dtLengthMenuConfig,
+                language: $.extend({}, window.dtLanguageConfig, {
+                    emptyTable: "Belum ada data evaluasi keputusan penentuan prioritas alternatif.",
+                    zeroRecords: "Data tidak ditemukan"
+                })
+            });
+            return;
+        }
+
+        var html = '';
+        for (var i = 0; i < items.length; i++) {
+            var k = items[i];
+            var isDraft = (k.status === 'Draft' || !k.status || k.status === '');
+
+            var tglFormatted = k.tanggalKeputusan
+                ? new Date(k.tanggalKeputusan).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+                : '-';
+
+            var aspekHtml = (k.namaAspek && k.namaAspek !== '-')
+                ? '<span class="fw-semibold" style="color:#0f172a; font-size:13px;">' + escHtml(k.namaAspek) + '</span>'
+                : '<span class="badge border fw-normal" style="background:#f1f5f9; color:#64748b; border-color:#cbd5e1; font-size:11px;">Belum Dipilih</span>';
+
+            var statusBadge = '';
+            if (isDraft) {
+                statusBadge = '<span class="status-pill" style="font-size:12px; font-weight:700; background:#fef3c7; color:#b45309; border:1px solid #fcd34d; padding:3px 10px; border-radius:9999px;">' +
+                    '<span class="dot-indicator" style="background:#d97706;"></span>Draf Evaluasi' +
+                    '</span>';
+            } else if (k.status === 'Selesai') {
+                statusBadge = '<span class="status-pill pill-active" style="font-size:12px; font-weight:700; background:#dcfce7; color:#15803d; border:1px solid #86efac; padding:3px 10px; border-radius:9999px;">' +
+                    '<span class="dot-indicator" style="background:#16a34a;"></span>Selesai Disahkan' +
+                    '</span>';
+                if (k.namaSupplierPemenang && k.namaSupplierPemenang !== '-') {
+                    statusBadge += '<div class="text-truncate mt-1 fw-bold" style="font-size:11.5px; color:#047857; max-width:140px;" title="Rank 1: ' + escHtml(k.namaSupplierPemenang) + '">' +
+                        'Rank 1: ' + escHtml(k.namaSupplierPemenang) +
+                        '</div>';
+                }
+            } else {
+                statusBadge = '<span class="status-pill" style="font-size:12px; font-weight:600; background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; padding:3px 10px; border-radius:9999px;">' + escHtml(k.status) + '</span>';
+            }
+
+            var actionBtn = isDraft
+                ? '<a href="/Keputusan/Index?id=' + k.id + '" class="btn-act btn-act-primary" title="Lanjutkan Evaluasi Keputusan"><i class="fas fa-play"></i></a>'
+                : '<a href="/Riwayat/Detail?id=' + k.id + '" class="btn-act btn-act-view" title="Lihat Detail Evaluasi Keputusan"><i class="fas fa-eye"></i></a>';
+
+            var namaLink = isDraft
+                ? '<a href="/Keputusan/Index?id=' + k.id + '" class="fw-bold text-decoration-none" style="color:#0f172a; font-size:13.5px;" title="Lanjutkan evaluasi keputusan">' + escHtml(k.namaKeputusan) + '</a>'
+                : '<a href="/Riwayat/Detail?id=' + k.id + '" class="fw-bold text-decoration-none" style="color:#0f172a; font-size:13.5px;" title="Buka detail evaluasi keputusan">' + escHtml(k.namaKeputusan) + '</a>';
+            var keteranganHtml = k.keterangan ? '<div class="text-truncate mt-0.5" style="max-width:320px; font-size:12px; color:#475569;" title="' + escHtml(k.keterangan) + '">' + escHtml(k.keterangan) + '</div>' : '';
+
+            html += '<tr>' +
+                '<td class="text-center fw-bold" style="color:#0f172a; font-size:13.5px;">' + (i + 1) + '</td>' +
+                '<td class="text-nowrap" style="white-space:nowrap;"><span class="code-tag">' + escHtml(k.kodeKeputusan || 'KPTS') + '</span></td>' +
+                '<td>' +
+                    '<div title="' + escHtml(k.keterangan || '') + '">' + namaLink + '</div>' +
+                '</td>' +
+                '<td style="color:#0f172a; font-weight:600; font-size:13px;">' + tglFormatted + '</td>' +
+                '<td>' + aspekHtml + '</td>' +
+                '<td class="text-center"><span class="badge border font-monospace" style="background:#f1f5f9; color:#0f172a; border-color:#cbd5e1; font-size:12px; font-weight:600; padding:4px 8px;">' + (k.jumlahSupplier || 0) + ' Alternatif</span></td>' +
+                '<td class="text-center">' + statusBadge + '</td>' +
+                '<td class="text-end">' + actionBtn + '</td>' +
+                '</tr>';
+        }
+
+        $('#tableRecentKegiatanBody').html(html);
+
+        dtRecent = $('#tableRecentKegiatan').DataTable({
+            pageLength: 10,
+            lengthMenu: window.dtLengthMenuConfig,
+            order: [],
+            language: $.extend({}, window.dtLanguageConfig, {
+                emptyTable: "Belum ada kegiatan evaluasi keputusan yang dibuat.",
+                zeroRecords: "Data tidak ditemukan"
+            })
+        });
+    }
+</script>
+}

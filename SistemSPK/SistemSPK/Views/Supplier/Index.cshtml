@@ -1,0 +1,305 @@
+@{
+    ViewData["Title"] = "Data Kandidat Alternatif";
+}
+
+<style>
+    .supplier-card-header-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+</style>
+
+<div class="row">
+    <div class="col-12">
+
+        <!-- Breadcrumb Bar -->
+        <div class="content-breadcrumb-bar mb-2">
+            <div class="breadcrumb-nav" id="pageBreadcrumb">
+                <span class="breadcrumb-current">Data Kandidat Alternatif</span>
+                <span class="breadcrumb-separator">/</span>
+            </div>
+        </div>
+
+        <!-- Admin Table Card -->
+        <div class="admin-card mb-4">
+            <div class="admin-card-header py-2.5 px-3 px-md-4">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 w-100">
+                    <div>
+                        <h3 class="admin-card-title">Daftar Kandidat Alternatif (Master Data)</h3>
+                        <p class="admin-card-desc">Kelola profil seluruh kandidat alternatif yang siap dievaluasi dalam kegiatan evaluasi keputusan</p>
+                    </div>
+                    <div class="supplier-card-header-actions">
+                        <button type="button" class="btn-primary-admin" onclick="openCreateSupplierModal()">
+                            <i class="fas fa-plus me-1"></i> Tambah Kandidat Alternatif
+                        </button>
+                        <button type="button" class="btn-secondary-admin" onclick="loadSupplierTable()">
+                            <i class="fas fa-sync-alt me-1"></i> Segarkan
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle w-100" id="tableSupplier" style="font-size:12.5px;">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 45px; text-align:center;">NO</th>
+                            <th style="width: 100px;">KODE</th>
+                            <th>NAMA KANDIDAT ALTERNATIF</th>
+                            <th>EMAIL</th>
+                            <th>ALAMAT / KETERANGAN</th>
+                            <th class="text-center" style="width: 90px;">STATUS</th>
+                            <th style="text-align: right; width: 90px;">AKSI</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableSupplierBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Modal Tambah / Edit Supplier (Alternatif) -->
+<div class="admin-modal-backdrop" id="modalSupplier">
+    <div class="admin-modal-card" style="max-width: 520px;">
+        <div class="admin-modal-head">
+            <div class="d-flex align-items-center gap-2">
+                <div class="brand-icon-box" style="width:30px; height:30px; font-size:13px; border-radius:6px;">
+                    <i class="fas fa-users-viewfinder text-white"></i>
+                </div>
+                <h4 class="admin-modal-title" id="modalSupplierTitle">Tambah Alternatif Baru</h4>
+            </div>
+            <button type="button" class="btn-modal-close" onclick="AdminModal.close('modalSupplier')">&times;</button>
+        </div>
+        <form id="formSupplier" onsubmit="event.preventDefault(); submitSupplier();">
+            <input type="hidden" id="supplierId" />
+            <div class="admin-modal-content">
+                <div class="row g-3">
+                    <div class="col-12 col-md-6">
+                        <div class="form-field-group mb-0">
+                            <label class="form-field-label">Kode Alternatif</label>
+                            <input type="text" id="supplierKode" class="form-field-input" placeholder="Otomatis jika kosong" />
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="form-field-group mb-0">
+                            <label class="form-field-label">Status Kesiapan <span style="color:#ef4444;">*</span></label>
+                            <select id="supplierStatus" class="form-field-input" required>
+                                <option value="Aktif">Aktif</option>
+                                <option value="Percobaan">Percobaan</option>
+                                <option value="Tidak Aktif">Tidak Aktif</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="form-field-group mb-0">
+                            <label class="form-field-label">Nama Alternatif / Rekanan <span style="color:#ef4444;">*</span></label>
+                            <input type="text" id="supplierNama" class="form-field-input" placeholder="Contoh: Alternatif A / PT Sejahtera Mandiri" required />
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="form-field-group mb-0">
+                            <label class="form-field-label">Alamat Email</label>
+                            <input type="email" id="supplierEmail" class="form-field-input" placeholder="Contoh: contact@alternatif.com" />
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="form-field-group mb-0">
+                            <label class="form-field-label">Alamat / Lokasi / Keterangan</label>
+                            <textarea id="supplierAlamat" class="form-field-textarea" rows="2" placeholder="Keterangan alamat atau profil alternatif..."></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="admin-modal-foot">
+                <button type="button" class="btn-secondary-admin" onclick="AdminModal.close('modalSupplier')">Batal</button>
+                <button type="submit" class="btn-primary-admin" id="btnSaveSupplier">
+                    <i class="fas fa-save me-1"></i> Simpan Alternatif
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    var dtSupplier = null;
+    var allSuppliers = [];
+
+    $(function () {
+        loadSupplierTable();
+    });
+
+    function loadSupplierTable() {
+        if (dtSupplier) {
+            dtSupplier.destroy();
+        }
+
+        $.ajax({
+            url: API_BASE_URL + '/suppliers',
+            type: 'GET',
+            dataType: 'json',
+            beforeSend: function () {
+                $('#tableSupplierBody').html('<tr><td colspan="9" class="text-center py-4 text-muted"><i class="fas fa-spinner fa-spin me-1"></i> Memuat data supplier...</td></tr>');
+            },
+            success: function (data) {
+                allSuppliers = data || [];
+                var html = '';
+
+                if (allSuppliers.length > 0) {
+                    for (var i = 0; i < allSuppliers.length; i++) {
+                        var s = allSuppliers[i];
+                        var statusBadge = s.status === 'Aktif'
+                            ? '<span class="status-pill pill-active"><span class="dot-indicator"></span>Aktif</span>'
+                            : (s.status === 'Percobaan'
+                                ? '<span class="status-pill pill-role" style="background:#fffbeb; color:#b45309; border-color:#fde68a;"><span class="dot-indicator" style="background:#f59e0b;"></span>Percobaan</span>'
+                                : '<span class="status-pill pill-inactive"><span class="dot-indicator"></span>Tidak Aktif</span>');
+
+                        html += '<tr>' +
+                            '<td class="text-center text-muted fw-bold">' + (i + 1) + '</td>' +
+                            '<td><span class="code-tag">' + escHtml(s.kodeSupplier) + '</span></td>' +
+                            '<td><strong style="color:#0f172a;">' + escHtml(s.namaSupplier) + '</strong></td>' +
+                            '<td>' + escHtml(s.email || '-') + '</td>' +
+                            '<td><span class="text-truncate d-inline-block" style="max-width:180px;" title="' + escHtml(s.alamat || '-') + '">' + escHtml(s.alamat || '-') + '</span></td>' +
+                            '<td class="text-center">' + statusBadge + '</td>' +
+                            '<td class="text-end text-nowrap">' +
+                                '<div class="table-btn-group justify-content-end">' +
+                                    '<button type="button" class="btn-action-edit" title="Edit Supplier" onclick="openEditSupplierModal(' + i + ')"><i class="fas fa-pen"></i></button>' +
+                                    '<button type="button" class="btn-action-delete" title="Hapus Supplier" onclick="confirmDeleteSupplier(\'' + s.id + '\', \'' + escHtml(s.namaSupplier).replace(/'/g, "\\'") + '\')"><i class="fas fa-trash"></i></button>' +
+                                '</div>' +
+                            '</td>' +
+                            '</tr>';
+                    }
+                    $('#tableSupplierBody').html(html);
+                } else {
+                    $('#tableSupplierBody').empty();
+                }
+
+                dtSupplier = $('#tableSupplier').DataTable({
+                    pageLength: 10,
+                    lengthMenu: window.dtLengthMenuConfig,
+                    language: $.extend({}, window.dtLanguageConfig, {
+                        emptyTable: "Belum ada data alternatif yang terdaftar.",
+                        zeroRecords: "Data tidak ditemukan"
+                    })
+                });
+            },
+            error: function () {
+                $('#tableSupplierBody').empty();
+                dtSupplier = $('#tableSupplier').DataTable({
+                    pageLength: 10,
+                    lengthMenu: window.dtLengthMenuConfig,
+                    language: $.extend({}, window.dtLanguageConfig, {
+                        emptyTable: "Gagal memuat data alternatif dari server.",
+                        zeroRecords: "Data tidak ditemukan"
+                    })
+                });
+            }
+        });
+    }
+
+    function openCreateSupplierModal() {
+        $('#supplierId').val('');
+        $('#supplierKode').val('');
+        $('#supplierNama').val('');
+        $('#supplierEmail').val('');
+        $('#supplierAlamat').val('');
+        $('#supplierStatus').val('Aktif');
+        $('#modalSupplierTitle').text('Tambah Alternatif Baru');
+        AdminModal.open('modalSupplier');
+    }
+
+    function openEditSupplierModal(index) {
+        var s = allSuppliers[index];
+        if (!s) return;
+
+        $('#supplierId').val(s.id);
+        $('#supplierKode').val(s.kodeSupplier);
+        $('#supplierNama').val(s.namaSupplier);
+        $('#supplierEmail').val(s.email || '');
+        $('#supplierAlamat').val(s.alamat || '');
+        $('#supplierStatus').val(s.status || 'Aktif');
+        $('#modalSupplierTitle').text('Ubah Data Alternatif');
+        AdminModal.open('modalSupplier');
+    }
+
+    function submitSupplier() {
+        var id = $('#supplierId').val();
+        var isEdit = !!id;
+
+        var payload = {
+            id: id || undefined,
+            kodeSupplier: $('#supplierKode').val().trim() || undefined,
+            namaSupplier: $('#supplierNama').val().trim(),
+            email: $('#supplierEmail').val().trim() || null,
+            alamat: $('#supplierAlamat').val().trim() || null,
+            status: $('#supplierStatus').val()
+        };
+
+        if (!payload.namaSupplier) {
+            Swal.fire('Validasi', 'Nama alternatif wajib diisi.', 'warning');
+            return;
+        }
+
+        var url = isEdit ? (API_BASE_URL + '/suppliers/' + id) : (API_BASE_URL + '/suppliers');
+        var method = isEdit ? 'PUT' : 'POST';
+
+        $('#btnSaveSupplier').prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i> Menyimpan...');
+
+        $.ajax({
+            url: url,
+            type: method,
+            contentType: 'application/json',
+            data: JSON.stringify(payload),
+            dataType: 'json',
+            success: function (res) {
+                $('#btnSaveSupplier').prop('disabled', false).html('<i class="fas fa-save me-1"></i> Simpan Alternatif');
+                AdminModal.close('modalSupplier');
+                AdminToast.success(res.message || 'Data alternatif berhasil disimpan');
+                loadSupplierTable();
+            },
+            error: function (xhr) {
+                $('#btnSaveSupplier').prop('disabled', false).html('<i class="fas fa-save me-1"></i> Simpan Alternatif');
+                var msg = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'Gagal menyimpan data alternatif.';
+                Swal.fire('Gagal', msg, 'error');
+            }
+        });
+    }
+
+    function confirmDeleteSupplier(id, nama) {
+        Swal.fire({
+            title: 'Hapus Alternatif?',
+            text: 'Apakah Anda yakin ingin menghapus data alternatif "' + nama + '"? Jika sudah memiliki riwayat keputusan, statusnya akan dinonaktifkan.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: 'Ya, Hapus',
+            cancelButtonText: 'Batal'
+        }).then(function (res) {
+            if (res.isConfirmed) {
+                $.ajax({
+                    url: API_BASE_URL + '/suppliers/' + id,
+                    type: 'DELETE',
+                    dataType: 'json',
+                    success: function (res) {
+                        AdminToast.success(res.message || 'Alternatif berhasil dihapus/dinonaktifkan');
+                        loadSupplierTable();
+                    },
+                    error: function (xhr) {
+                        var msg = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'Gagal menghapus alternatif.';
+                        Swal.fire('Gagal', msg, 'error');
+                    }
+                });
+            }
+        });
+    }
+</script>
+}

@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\build\SistemSPK.props" />
+</Project>

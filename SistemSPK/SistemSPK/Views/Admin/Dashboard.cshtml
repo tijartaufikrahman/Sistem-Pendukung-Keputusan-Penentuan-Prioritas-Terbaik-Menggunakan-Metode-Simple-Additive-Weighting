@@ -1,0 +1,120 @@
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<!-- ATURAN 1: Tag pembungkus paling awal di file konten wajib diawali <div class="row ..."> -->
+<div class="row">
+    <div class="col-md-4 col-sm-6 mb-3">
+        <div class="stat-card">
+            <div class="stat-icon green"><i class="fas fa-users"></i></div>
+            <div>
+                <div id="statUsers" class="stat-number">0</div>
+                <div class="stat-label">Total Pengguna</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 col-sm-6 mb-3">
+        <div class="stat-card">
+            <div class="stat-icon blue"><i class="fas fa-shield-alt"></i></div>
+            <div>
+                <div id="statRoles" class="stat-number">0</div>
+                <div class="stat-label">Total Role</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 col-sm-12 mb-3">
+        <div class="stat-card">
+            <div class="stat-icon purple"><i class="fas fa-bars"></i></div>
+            <div>
+                <div id="statMenus" class="stat-number">0</div>
+                <div class="stat-label">Total Menu</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8 col-md-12 mb-3">
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="fas fa-bolt" style="color:#0f766e;margin-right:.45rem;"></i>Menu Administrator</h3>
+                <span style="font-size:.72rem;color:#94a3b8;">Akses penuh</span>
+            </div>
+            <div class="card-body">
+                <div class="dash-actions">
+                    <a class="dash-action" href="/Admin/Dashboard">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span><strong>Dashboard</strong><small>Ringkasan sistem</small></span>
+                    </a>
+                    <a class="dash-action" href="/Admin/Database">
+                        <i class="fas fa-database"></i>
+                        <span><strong>Database</strong><small>Kelola data sistem</small></span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4 col-md-12 mb-3">
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="fas fa-info-circle" style="color:#0f766e;margin-right:.45rem;"></i>Info Sistem</h3>
+            </div>
+            <div class="card-body">
+                <p style="color:#64748b;font-size:.875rem;">
+                    <strong>Frontend:</strong> ASP.NET Core MVC (Controller & View)<br>
+                    <strong>Backend:</strong> ASP.NET Core Web API (RestAPIDefault)<br>
+                    <strong>Komunikasi:</strong> Ajax jQuery (REST API)<br>
+                    <strong>Database:</strong> SQL Server (DefaultDb)<br>
+                    <strong>Arsitektur:</strong> 1 Controller ➔ 1 Interface ➔ 1 Repository ➔ 1 Model
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+// ATURAN 2: Fungsi tersendiri & Wajib $.ajax() lengkap (DILARANG $.get() / $.post())
+function loadDashboardStats() {
+    $.ajax({
+        url: API_BASE_URL + '/users/count',
+        type: 'GET',
+        dataType: 'json',
+        success: function (res) {
+            $('#statUsers').text(res.count);
+        },
+        error: function (xhr, status, error) {
+            console.error('Gagal mengambil data user:', error);
+        }
+    });
+
+    $.ajax({
+        url: API_BASE_URL + '/roles/count',
+        type: 'GET',
+        dataType: 'json',
+        success: function (res) {
+            $('#statRoles').text(res.count);
+        },
+        error: function (xhr, status, error) {
+            console.error('Gagal mengambil data role:', error);
+        }
+    });
+
+    $.ajax({
+        url: API_BASE_URL + '/menuroles/count',
+        type: 'GET',
+        dataType: 'json',
+        success: function (res) {
+            $('#statMenus').text(res.count);
+        },
+        error: function (xhr, status, error) {
+            console.error('Gagal mengambil data menu:', error);
+        }
+    });
+}
+
+$(function () {
+    loadDashboardStats();
+});
+</script>
+}

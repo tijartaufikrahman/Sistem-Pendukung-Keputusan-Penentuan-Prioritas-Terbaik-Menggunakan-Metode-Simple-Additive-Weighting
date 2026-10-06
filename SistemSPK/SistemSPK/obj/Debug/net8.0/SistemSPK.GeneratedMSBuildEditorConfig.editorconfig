@@ -1,0 +1,127 @@
+is_global = true
+build_property.TargetFramework = net8.0
+build_property.TargetPlatformMinVersion = 
+build_property.UsingMicrosoftNETSdkWeb = true
+build_property.ProjectTypeGuids = 
+build_property.InvariantGlobalization = 
+build_property.PlatformNeutralAssembly = 
+build_property.EnforceExtendedAnalyzerRules = 
+build_property._SupportedPlatformList = Linux,macOS,Windows
+build_property.RootNamespace = SistemSPK
+build_property.RootNamespace = SistemSPK
+build_property.ProjectDir = C:\Programing\Project 10 test aja\SistemSPK\SistemSPK\
+build_property.EnableComHosting = 
+build_property.EnableGeneratedComInterfaceComImportInterop = 
+build_property.RazorLangVersion = 8.0
+build_property.SupportLocalizedComponentNames = 
+build_property.GenerateRazorMetadataSourceChecksumAttributes = 
+build_property.MSBuildProjectDirectory = C:\Programing\Project 10 test aja\SistemSPK\SistemSPK
+build_property._RazorSourceGeneratorDebug = 
+
+[C:/Programing/Project 10 test aja/SistemSPK/SistemSPK/Views/Account/ForgotPassword.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNjb3VudFxGb3Jnb3RQYXNzd29yZC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Programing/Project 10 test aja/SistemSPK/SistemSPK/Views/Account/ForgotPasswordConfirmation.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNjb3VudFxGb3Jnb3RQYXNzd29yZENvbmZpcm1hdGlvbi5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Programing/Project 10 test aja/SistemSPK/SistemSPK/Views/Account/Login.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNjb3VudFxMb2dpbi5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Programing/Project 10 test aja/SistemSPK/SistemSPK/Views/Account/ResetPassword.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNjb3VudFxSZXNldFBhc3N3b3JkLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Programing/Project 10 test aja/SistemSPK/SistemSPK/Views/Account/VerifyOtp.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNjb3VudFxWZXJpZnlPdHAuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Programing/Project 10 test aja/SistemSPK/SistemSPK/Views/Admin/Dashboard.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cRGFzaGJvYXJkLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Programing/Project 10 test aja/SistemSPK/SistemSPK/Views/Admin/Database.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cRGF0YWJhc2UuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Programing/Project 10 test aja/SistemSPK/SistemSPK/Views/Dashboard/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRGFzaGJvYXJkXEluZGV4LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Programing/Project 10 test aja/SistemSPK/SistemSPK/Views/Home/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxJbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Programing/Project 10 test aja/SistemSPK/SistemSPK/Views/Home/Privacy.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxQcml2YWN5LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Programing/Project 10 test aja/SistemSPK/SistemSPK/Views/Keputusan/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcS2VwdXR1c2FuXEluZGV4LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Programing/Project 10 test aja/SistemSPK/SistemSPK/Views/Kriteria/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcS3JpdGVyaWFcSW5kZXguY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Programing/Project 10 test aja/SistemSPK/SistemSPK/Views/Kriteria/Parameter.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcS3JpdGVyaWFcUGFyYW1ldGVyLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Programing/Project 10 test aja/SistemSPK/SistemSPK/Views/Riwayat/Detail.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUml3YXlhdFxEZXRhaWwuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Programing/Project 10 test aja/SistemSPK/SistemSPK/Views/Riwayat/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUml3YXlhdFxJbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Programing/Project 10 test aja/SistemSPK/SistemSPK/Views/Shared/Error.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXEVycm9yLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Programing/Project 10 test aja/SistemSPK/SistemSPK/Views/Shared/_ValidationScriptsPartial.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9WYWxpZGF0aW9uU2NyaXB0c1BhcnRpYWwuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Programing/Project 10 test aja/SistemSPK/SistemSPK/Views/Supplier/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3VwcGxpZXJcSW5kZXguY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Programing/Project 10 test aja/SistemSPK/SistemSPK/Views/Template/Alert.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGVtcGxhdGVcQWxlcnQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Programing/Project 10 test aja/SistemSPK/SistemSPK/Views/Template/Card.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGVtcGxhdGVcQ2FyZC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Programing/Project 10 test aja/SistemSPK/SistemSPK/Views/Template/Form.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGVtcGxhdGVcRm9ybS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Programing/Project 10 test aja/SistemSPK/SistemSPK/Views/Template/Form2.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGVtcGxhdGVcRm9ybTIuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Programing/Project 10 test aja/SistemSPK/SistemSPK/Views/Template/Modal.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGVtcGxhdGVcTW9kYWwuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Programing/Project 10 test aja/SistemSPK/SistemSPK/Views/Template/Table.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGVtcGxhdGVcVGFibGUuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Programing/Project 10 test aja/SistemSPK/SistemSPK/Views/_ViewImports.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcX1ZpZXdJbXBvcnRzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Programing/Project 10 test aja/SistemSPK/SistemSPK/Views/_ViewStart.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcX1ZpZXdTdGFydC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Programing/Project 10 test aja/SistemSPK/SistemSPK/Views/Shared/_Layout.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9MYXlvdXQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = b-98klcazfqs

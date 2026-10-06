@@ -1,0 +1,438 @@
+@{
+    ViewData["Title"] = "Kriteria Penilaian";
+}
+
+<style>
+    .pill-cost {
+        background: #fef2f2;
+        color: #b91c1c;
+        border: 1px solid #fecaca;
+        font-size: 10.5px;
+        font-weight: 700;
+        padding: 3px 9px;
+        border-radius: 6px;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+    .pill-benefit {
+        background: #f0fdf4;
+        color: #15803d;
+        border: 1px solid #bbf7d0;
+        font-size: 10.5px;
+        font-weight: 700;
+        padding: 3px 9px;
+        border-radius: 6px;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+</style>
+
+<div class="row">
+    <div class="col-12">
+
+        <!-- Breadcrumb Bar -->
+        <div class="content-breadcrumb-bar mb-2">
+            <div class="breadcrumb-nav" id="pageBreadcrumb">
+                <a href="/Kriteria" class="breadcrumb-parent" style="text-decoration:none; color:inherit;">Aspek Penilaian Evaluasi</a>
+                <span class="breadcrumb-separator">/</span>
+                <span class="breadcrumb-current">Kriteria Penilaian</span>
+            </div>
+        </div>
+
+        <!-- 2. KARTU PARAMETER EVALUASI (TINGKAT 2) -->
+        <div class="admin-card mb-4">
+            <div class="admin-card-header py-2.5 px-3 px-md-4">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 w-100">
+                    <div>
+                        <h3 class="admin-card-title">Kriteria Penilaian &amp; Sifat Evaluasi (Cost / Benefit)</h3>
+                        <p class="admin-card-desc">Indikator pengukuran riil di bawah setiap aspek yang diklasifikasikan sebagai Cost atau Benefit</p>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <select id="aspekFilterSelect" class="form-select form-select-sm" style="width: 220px; font-size:12px; font-weight:600;" onchange="onAspekSelectionChanged()">
+                            <option value="">Semua Aspek Evaluasi</option>
+                        </select>
+                        <button type="button" class="btn-primary-admin" onclick="openCreateParameterModal()">
+                            <i class="fas fa-plus me-1"></i> Tambah Parameter Baru
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle w-100" id="tableParameter" style="font-size:12.5px;">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 45px; text-align:center;">NO</th>
+                            <th style="width: 95px;">KODE</th>
+                            <th>NAMA PARAMETER</th>
+                            <th style="width: 100px;">SATUAN</th>
+                            <th class="text-center" style="width: 130px;">SIFAT KRITERIA</th>
+                            <th>PANDUAN / PENJELASAN</th>
+                            <th style="text-align: right; width: 90px;">AKSI</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableParameterBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Modal Tambah / Edit Parameter -->
+<div class="admin-modal-backdrop" id="modalParameter">
+    <div class="admin-modal-card" style="max-width: 520px;">
+        <div class="admin-modal-head">
+            <div class="d-flex align-items-center gap-2">
+                <div class="brand-icon-box" style="width:30px; height:30px; font-size:13px; border-radius:6px;">
+                    <i class="fas fa-sliders text-white"></i>
+                </div>
+                <h4 class="admin-modal-title" id="modalParameterTitle">Tambah Parameter Baru</h4>
+            </div>
+            <button type="button" class="btn-modal-close" onclick="AdminModal.close('modalParameter')">&times;</button>
+        </div>
+        <form id="formParameter" onsubmit="event.preventDefault(); submitParameter();">
+            <input type="hidden" id="parameterId" />
+            <input type="hidden" id="parameterAspekId" />
+            <input type="hidden" id="parameterKode" />
+            <div class="admin-modal-content">
+                <div class="row g-3">
+
+                    <div class="col-12">
+                        <div class="form-field-group mb-0">
+                            <label class="form-field-label">Nama Parameter Penilaian <span style="color:#ef4444;">*</span></label>
+                            <input type="text" id="parameterNama" class="form-field-input" placeholder="Contoh: Ketepatan Waktu Pengiriman (Lead Time)" required />
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="form-field-group mb-0">
+                            <label class="form-field-label">Satuan Ukuran <span style="color:#ef4444;">*</span></label>
+                            <input type="text" id="parameterSatuan" class="form-field-input" placeholder="Contoh: Rp, %, Hari, Skor (1-5)" required />
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-field-label">Sifat Kriteria (MADM Logic) <span style="color:#ef4444;">*</span></label>
+                        <div class="d-flex align-items-center gap-4 p-2.5 rounded-2" style="background:#f8fafc; border:1px solid #e2e8f0;">
+                            <label class="d-flex align-items-center gap-2 mb-0" style="cursor:pointer; font-size:12.5px;">
+                                <input type="radio" name="paramSifatKriteria" value="Cost" id="radioCost" checked />
+                                <span class="pill-cost"><i class="fas fa-arrow-down"></i> Cost (Makin kecil makin bagus)</span>
+                            </label>
+                            <label class="d-flex align-items-center gap-2 mb-0" style="cursor:pointer; font-size:12.5px;">
+                                <input type="radio" name="paramSifatKriteria" value="Benefit" id="radioBenefit" />
+                                <span class="pill-benefit"><i class="fas fa-arrow-up"></i> Benefit (Makin besar makin bagus)</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="form-field-group mb-0">
+                            <label class="form-field-label">Panduan / Penjelasan Parameter</label>
+                            <textarea id="parameterKeterangan" class="form-field-textarea" rows="2" placeholder="Keterangan cara mengukur atau arti nilai..."></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="admin-modal-foot">
+                <button type="button" class="btn-secondary-admin" onclick="AdminModal.close('modalParameter')">Batal</button>
+                <button type="submit" class="btn-primary-admin" id="btnSaveParameter">
+                    <i class="fas fa-save me-1"></i> Simpan Parameter
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    var dtParameter = null;
+    var allAspeks = [];
+    var allParameters = [];
+    var requestedAspekId = '@(ViewData["AspekId"] ?? "")';
+
+    $(function () {
+        // Ambil query param aspekId dari URL jika ada
+        var urlParams = new URLSearchParams(window.location.search);
+        var urlAspekId = urlParams.get('aspekId');
+        if (urlAspekId) {
+            requestedAspekId = urlAspekId;
+        }
+
+        loadAspeksThenParameters();
+    });
+
+    function loadAspeksThenParameters() {
+        $.ajax({
+            url: API_BASE_URL + '/aspeks',
+            type: 'GET',
+            dataType: 'json',
+            success: function (data) {
+                allAspeks = data || [];
+
+                // Isi dropdown filter aspek dan modal aspek
+                var filterOpt = '<option value="">Semua Aspek Evaluasi</option>';
+                var modalOpt = '<option value="">-- Pilih Aspek Induk --</option>';
+
+                for (var i = 0; i < allAspeks.length; i++) {
+                    var a = allAspeks[i];
+                    filterOpt += '<option value="' + a.id + '">' + escHtml(a.kodeAspek) + ' - ' + escHtml(a.namaAspek) + '</option>';
+                    modalOpt += '<option value="' + a.id + '">' + escHtml(a.kodeAspek) + ' - ' + escHtml(a.namaAspek) + '</option>';
+                }
+
+                $('#aspekFilterSelect').html(filterOpt);
+                $('#parameterAspekId').html(modalOpt);
+
+                // Set initial selection
+                if (requestedAspekId) {
+                    $('#aspekFilterSelect').val(requestedAspekId);
+                }
+
+                updateAspekBannerInfo();
+                loadParameterData();
+            },
+            error: function () {
+                $('#tableParameterBody').html('<tr><td colspan="8" class="text-center py-4 text-danger"><i class="fas fa-circle-exclamation me-1"></i> Gagal memuat data aspek induk.</td></tr>');
+            }
+        });
+    }
+
+    function onAspekSelectionChanged() {
+        requestedAspekId = $('#aspekFilterSelect').val();
+        
+        // Update URL query string tanpa reload halaman
+        var newUrl = window.location.pathname + (requestedAspekId ? ('?aspekId=' + requestedAspekId) : '');
+        window.history.replaceState({ path: newUrl }, '', newUrl);
+
+        updateAspekBannerInfo();
+        loadParameterData();
+    }
+
+    function updateAspekBannerInfo() {
+        var selId = $('#aspekFilterSelect').val();
+        if (!selId) {
+            $('#currentAspekKode').text('SEMUA').css('background', '#64748b');
+            $('#currentAspekNama').text('Semua Aspek Evaluasi');
+            $('#currentAspekDesc').text('Menampilkan seluruh parameter tolok ukur penilaian dari seluruh aspek.');
+            return;
+        }
+
+        var found = allAspeks.find(function (a) { return String(a.id).toLowerCase() === String(selId).toLowerCase(); });
+        if (found) {
+            $('#currentAspekKode').text(found.kodeAspek).css('background', '#0d9488');
+            $('#currentAspekNama').text(found.namaAspek);
+            $('#currentAspekDesc').text(found.deskripsi || 'Aspek penilaian evaluasi multi-kriteria untuk penentuan prioritas alternatif terbaik.');
+        }
+    }
+
+    function loadParameterData() {
+        if (dtParameter) {
+            dtParameter.destroy();
+            dtParameter = null;
+        }
+        $('#tableParameterBody').empty();
+
+        var filterId = $('#aspekFilterSelect').val();
+        var url = API_BASE_URL + '/parameters' + (filterId ? ('?aspekId=' + filterId) : '');
+
+        $.ajax({
+            url: url,
+            type: 'GET',
+            dataType: 'json',
+            success: function (data) {
+                allParameters = data || [];
+                var html = '';
+                var costCount = 0;
+                var benefitCount = 0;
+
+                if (allParameters.length > 0) {
+                    for (var i = 0; i < allParameters.length; i++) {
+                        var p = allParameters[i];
+                        var isCost = (p.sifatKriteria || '').toLowerCase() === 'cost';
+                        if (isCost) costCount++; else benefitCount++;
+
+                        var sifatBadge = isCost
+                            ? '<span class="pill-cost"><i class="fas fa-arrow-down"></i> Cost</span>'
+                            : '<span class="pill-benefit"><i class="fas fa-arrow-up"></i> Benefit</span>';
+
+                        html += '<tr>' +
+                            '<td class="text-center text-muted fw-bold">' + (i + 1) + '</td>' +
+                            '<td><span class="code-tag">' + escHtml(p.kodeParameter) + '</span></td>' +
+                            '<td><strong style="color:#0f172a; font-size:13px;">' + escHtml(p.namaParameter) + '</strong></td>' +
+                            '<td><span class="font-monospace fw-bold text-teal">' + escHtml(p.satuan) + '</span></td>' +
+                            '<td class="text-center">' + sifatBadge + '</td>' +
+                            '<td><small class="text-muted">' + escHtml(p.keterangan || '-') + '</small></td>' +
+                            '<td class="text-end text-nowrap">' +
+                                '<div class="table-btn-group justify-content-end align-items-center gap-1">' +
+                                    '<button type="button" class="btn-action-edit" title="Edit Parameter" onclick="openEditParameterModal(' + i + ')"><i class="fas fa-pen"></i></button>' +
+                                    '<button type="button" class="btn-action-delete" title="Hapus Parameter" onclick="confirmDeleteParameter(\'' + p.id + '\', \'' + escHtml(p.namaParameter).replace(/'/g, "\\'") + '\')"><i class="fas fa-trash"></i></button>' +
+                                '</div>' +
+                            '</td>' +
+                            '</tr>';
+                    }
+                    $('#tableParameterBody').html(html);
+                } else {
+                    $('#tableParameterBody').empty();
+                }
+
+                // Update ringkasan counter
+                $('#countTotalParam').text(allParameters.length + ' Parameter');
+                $('#countCostParam').text(costCount + ' Cost');
+                $('#countBenefitParam').text(benefitCount + ' Benefit');
+
+                dtParameter = $('#tableParameter').DataTable({
+                    pageLength: 10,
+                    lengthMenu: window.dtLengthMenuConfig,
+                    language: $.extend({}, window.dtLanguageConfig, {
+                        emptyTable: "Belum ada parameter evaluasi pada aspek ini. Klik \"Tambah Parameter Baru\" untuk membuat parameter.",
+                        zeroRecords: "Parameter tidak ditemukan"
+                    })
+                });
+            },
+            error: function () {
+                $('#tableParameterBody').empty();
+                dtParameter = $('#tableParameter').DataTable({
+                    pageLength: 10,
+                    lengthMenu: window.dtLengthMenuConfig,
+                    language: $.extend({}, window.dtLanguageConfig, {
+                        emptyTable: "Gagal memuat data parameter. Pastikan REST API berjalan.",
+                        zeroRecords: "Data tidak ditemukan"
+                    })
+                });
+            }
+        });
+    }
+
+    function openCreateParameterModal() {
+        $('#parameterId').val('');
+        $('#parameterKode').val('');
+        $('#parameterNama').val('');
+        $('#parameterSatuan').val('');
+        $('#parameterKeterangan').val('');
+        $('#radioCost').prop('checked', true);
+
+        var curFilter = $('#aspekFilterSelect').val() || requestedAspekId;
+        if (!curFilter && allAspeks.length > 0) {
+            curFilter = allAspeks[0].id;
+        }
+
+        $('#parameterAspekId').val(curFilter || '');
+
+        var found = allAspeks.find(function (a) { return String(a.id).toLowerCase() === String(curFilter).toLowerCase(); });
+        var labelText = found ? (found.kodeAspek + ' - ' + found.namaAspek) : 'Aspek Evaluasi Terpilih';
+        $('#modalAspekLabel').text(labelText);
+
+        $('#modalParameterTitle').text('Tambah Parameter Evaluasi Baru');
+        AdminModal.open('modalParameter');
+    }
+
+    function openEditParameterModal(index) {
+        var p = allParameters[index];
+        if (!p) return;
+
+        $('#parameterId').val(p.id);
+        $('#parameterAspekId').val(p.aspekId);
+        $('#parameterKode').val(p.kodeParameter);
+        $('#parameterNama').val(p.namaParameter);
+        $('#parameterSatuan').val(p.satuan);
+        $('#parameterKeterangan').val(p.keterangan || '');
+
+        var found = allAspeks.find(function (a) { return String(a.id).toLowerCase() === String(p.aspekId).toLowerCase(); });
+        var labelText = found ? (found.kodeAspek + ' - ' + found.namaAspek) : (p.namaAspek || 'Aspek Evaluasi');
+        $('#modalAspekLabel').text(labelText + ' (' + p.kodeParameter + ')');
+
+        if ((p.sifatKriteria || '').toLowerCase() === 'benefit') {
+            $('#radioBenefit').prop('checked', true);
+        } else {
+            $('#radioCost').prop('checked', true);
+        }
+
+        $('#modalParameterTitle').text('Ubah Parameter Evaluasi');
+        AdminModal.open('modalParameter');
+    }
+
+    function submitParameter() {
+        var id = $('#parameterId').val();
+        var isEdit = !!id;
+
+        var payload = {
+            id: id || undefined,
+            aspekId: $('#parameterAspekId').val(),
+            kodeParameter: $('#parameterKode').val().trim() || undefined,
+            namaParameter: $('#parameterNama').val().trim(),
+            satuan: $('#parameterSatuan').val().trim(),
+            sifatKriteria: $('input[name="paramSifatKriteria"]:checked').val(),
+            keterangan: $('#parameterKeterangan').val().trim() || null
+        };
+
+        if (!payload.aspekId) {
+            Swal.fire('Validasi', 'Pilih aspek induk terlebih dahulu.', 'warning');
+            return;
+        }
+        if (!payload.namaParameter) {
+            Swal.fire('Validasi', 'Nama parameter wajib diisi.', 'warning');
+            return;
+        }
+        if (!payload.satuan) {
+            Swal.fire('Validasi', 'Satuan ukuran wajib diisi (misal: Rp, %, Hari, Skor 1-5).', 'warning');
+            return;
+        }
+
+        var url = isEdit ? (API_BASE_URL + '/parameters/' + id) : (API_BASE_URL + '/parameters');
+        var method = isEdit ? 'PUT' : 'POST';
+
+        $('#btnSaveParameter').prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i> Menyimpan...');
+
+        $.ajax({
+            url: url,
+            type: method,
+            contentType: 'application/json',
+            data: JSON.stringify(payload),
+            dataType: 'json',
+            success: function (res) {
+                $('#btnSaveParameter').prop('disabled', false).html('<i class="fas fa-save me-1"></i> Simpan Parameter');
+                AdminModal.close('modalParameter');
+                AdminToast.success(res.message || 'Parameter berhasil disimpan');
+                loadParameterData();
+            },
+            error: function (xhr) {
+                $('#btnSaveParameter').prop('disabled', false).html('<i class="fas fa-save me-1"></i> Simpan Parameter');
+                var msg = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'Gagal menyimpan parameter.';
+                Swal.fire('Gagal', msg, 'error');
+            }
+        });
+    }
+
+    function confirmDeleteParameter(id, nama) {
+        Swal.fire({
+            title: 'Hapus Parameter Evaluasi?',
+            text: 'Apakah Anda yakin ingin menghapus parameter "' + nama + '"?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: 'Ya, Hapus',
+            cancelButtonText: 'Batal'
+        }).then(function (res) {
+            if (res.isConfirmed) {
+                $.ajax({
+                    url: API_BASE_URL + '/parameters/' + id,
+                    type: 'DELETE',
+                    dataType: 'json',
+                    success: function (res) {
+                        AdminToast.success(res.message || 'Parameter berhasil dihapus');
+                        loadParameterData();
+                    },
+                    error: function (xhr) {
+                        var msg = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'Gagal menghapus parameter.';
+                        Swal.fire('Gagal', msg, 'error');
+                    }
+                });
+            }
+        });
+    }
+</script>
+}
